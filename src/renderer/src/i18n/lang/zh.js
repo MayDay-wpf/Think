@@ -56,6 +56,7 @@ export default {
       addmodel:"添加模型",
       editchannel:"编辑渠道",
       editmodel:"编辑模型",
+      nothavemodel:"暂无模型",
       edit:"编辑",
       delete:"删除",
       enable:"启用",

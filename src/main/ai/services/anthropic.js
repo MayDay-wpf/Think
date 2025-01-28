@@ -263,17 +263,20 @@ class AnthropicService {
                 }
             }
 
-            const searchResults = await handleWebSearch([accumulated]);
-            console.log('searchResults:', searchResults);
-            if (searchResults) {
-                const newStream = await this._processSearchResults(searchResults, requestMessages, { ...options, stream: true });
+            let searchResults = null;
+            if (accumulated) {
+                searchResults = await handleWebSearch([accumulated]);
+                console.log('searchResults:', searchResults);
+                if (searchResults) {
+                    const newStream = await this._processSearchResults(searchResults, requestMessages, { ...options, stream: true });
 
-                for await (const newChunk of newStream) {
-                    const newContent = newChunk.delta?.text || '';
-                    if (newContent) {
-                        accumulatedResponse += newContent;
-                        this.currentSession.accumulatedResponse = accumulatedResponse;
-                        onData(newContent, false);
+                    for await (const newChunk of newStream) {
+                        const newContent = newChunk.delta?.text || '';
+                        if (newContent) {
+                            accumulatedResponse += newContent;
+                            this.currentSession.accumulatedResponse = accumulatedResponse;
+                            onData(newContent, false);
+                        }
                     }
                 }
             }
@@ -306,6 +309,7 @@ class AnthropicService {
         } catch (error) {
             if (error.name === 'TypeError') {
                 console.log('Request aborted');
+                console.log('error', error)
                 onData('', true);
                 return;
             }

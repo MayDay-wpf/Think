@@ -458,8 +458,8 @@ const onModelDragEnd = async (evt, channelCode) => {
                 </draggable>
               </template>
               <div v-else class="empty-models">
-                <el-empty description="暂无模型" :image-size="60">
-                  <el-button type="primary" @click="dialogVisible = true">添加模型</el-button>
+                <el-empty :description="t('modelsetting.nothavemodel')" :image-size="60">
+                  <el-button type="primary" @click="dialogVisible = true">{{ t('modelsetting.addmodel') }}</el-button>
                 </el-empty>
               </div>
             </div>
