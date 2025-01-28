@@ -8,6 +8,8 @@
 - [x] Basic UI
 - [x] Web Search
 - [x] Chat
+- [x] Images Chat
+- [x] Files Chat
 - [] Image Generation
 - [] Plugin by function calling
 - [] Knowledge
@@ -26,19 +28,19 @@
 - [] MidJourney
 
 
-### Install
+# Install
 
 ```bash
 $ npm install
 ```
 
-### Development
+# Development
 
 ```bash
 $ npm run dev
 ```
 
-### Build
+# Build
 
 ```bash
 # For windows
