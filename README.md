@@ -1,12 +1,30 @@
+![logo](src/renderer/src/assets/logo.png)
+
 # Think
 
-An Electron application with Vue
+- Think, a large language model client application, available on macOS, Windows, and Linux.
 
-## Recommended IDE Setup
+# Task
+- [x] Basic UI
+- [x] Web Search
+- [x] Chat
+- [] Image Generation
+- [] Plugin by function calling
+- [] Knowledge
+- [x] OpenAI
+- [x] DeepSeek
+- [x] Ollama
+- [] Anthropic
+- [] Gmini
+- [] Qwen
+- [] GLM
+- [] Baichuan
+- [] MiniMax
+- [] DouBao
+- [] SiliconFlow
+- [] DALL-E
+- [] MidJourney
 
-- [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
-
-## Project Setup
 
 ### Install
 

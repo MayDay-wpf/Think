@@ -1,5 +1,5 @@
 appId: com.electron.app
-productName: ify-lite
+productName: Think
 directories:
   buildResources: build
 files:
@@ -11,7 +11,7 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: ify-lite
+  executableName: Think
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
