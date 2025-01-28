@@ -1,9 +1,10 @@
 {
-  "name": "think",
+  "name": "Think",
+  "productName": "Think",
   "version": "1.0.0",
   "description": "An Electron application with Vue",
   "main": "./out/main/index.js",
-  "author": "example.com",
+  "author": "aibotpro.cn",
   "homepage": "https://electron-vite.org",
   "scripts": {
     "format": "prettier --write .",
@@ -62,5 +63,13 @@
     "prettier": "^3.3.2",
     "vite": "^5.3.1",
     "vue": "^3.4.30"
+  },
+  "build": {
+    "mac": {
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
+    }
   }
 }
