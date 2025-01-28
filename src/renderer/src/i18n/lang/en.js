@@ -56,6 +56,7 @@ export default {
     addmodel: "Add Model",
     editchannel: "Edit Chanel",
     editmodel: "Edit Model",
+    nothavemodel:"No models available",
     edit: "Edit",
     delete: "Delete",
     enable: "Enable",
