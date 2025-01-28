@@ -70,7 +70,7 @@ async function initializeDatabase() {
           IconPath: '@renderer/assets/icons/qwen.svg',
           Name: 'Qwen',
           Code: 'qwen',
-          BaseURL: 'https://api.siliconflow.cn/v1',
+          BaseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
           APIKey: 'sz-xxxxxxxxxx',
           IsEnabled: 1,
           Seq: 3
@@ -88,7 +88,7 @@ async function initializeDatabase() {
           IconPath: '@renderer/assets/icons/anthropic.svg',
           Name: 'Anthropic',
           Code: 'anthropic',
-          BaseURL: 'https://api.siliconflow.cn/v1',
+          BaseURL: 'https://api.anthropic.com',
           APIKey: 'sz-xxxxxxxxxx',
           IsEnabled: 1,
           Seq: 5

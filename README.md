@@ -16,7 +16,7 @@
 - [x] OpenAI
 - [x] DeepSeek
 - [x] Ollama
-- [] Anthropic
+- [x] Anthropic
 - [] Gmini
 - [] Qwen
 - [] GLM

@@ -24,7 +24,30 @@ const formData = ref({
   seq: 0
 })
 // 渠道编码选项
-const channelCodeOptions = ref([])
+const channelCodeOptions = [
+  {
+    label: 'OpenAI',
+    value: 'openai'
+  }, {
+    label: 'DeepSeek',
+    value: 'deepseek'
+  }, {
+    label: 'Anthropic',
+    value: 'anthropic'
+  },{
+    label:'Gemini',
+    value:'gemini'
+  },{
+    label:'Qwen',
+    value:'qwen'
+  },{
+    label:'SiliconFlow',
+    value:'siliconflow'
+  },{
+    label:'Ollama',
+    value:'ollama'
+  }
+]
 
 // 加载渠道和模型列表
 const loadData = async () => {
@@ -43,11 +66,6 @@ const loadData = async () => {
     }
     channelList.value = channels
     modelList.value = models
-    // 更新 channelCodeOptions
-    channelCodeOptions.value = channels.map(channel => ({
-      label: channel.Name,
-      value: channel.ChannelsCode
-    }))
     // 更新渠道模型数据
     const modelsByChannel = {}
     channels.forEach(channel => {

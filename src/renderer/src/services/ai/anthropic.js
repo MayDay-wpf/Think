@@ -1,16 +1,15 @@
 const { ipcRenderer } = window.electron
 
-class OpenAIService {
+class AnthropicService {
     constructor(apiKey, baseURL) {
-        // 确保传递的是简单对象
-        ipcRenderer.invoke('openai:init', {
+        ipcRenderer.invoke('anthropic:init', {
             apiKey: apiKey || '',
             baseURL: baseURL || ''
         })
     }
 
     stopGeneration() {
-        ipcRenderer.send('openai:stop-generation');
+        ipcRenderer.send('anthropic:stop-generation');
     }
 
     async chatCompletion(messages, options = {}) {
@@ -23,7 +22,7 @@ class OpenAIService {
                 online: msg.online
             }))
 
-            return await ipcRenderer.invoke('openai:chat', {
+            return await ipcRenderer.invoke('anthropic:chat', {
                 messages: cleanMessages,
                 options: {
                     channel: options.channel,
@@ -32,13 +31,11 @@ class OpenAIService {
                     groupId: options.groupId,
                     ...(options.temperature !== undefined && { temperature: options.temperature }),
                     ...(options.maxTokens !== undefined && { maxTokens: options.maxTokens }),
-                    ...(options.presencePenalty !== undefined && { presencePenalty: options.presencePenalty }),
-                    ...(options.frequencyPenalty !== undefined && { frequencyPenalty: options.frequencyPenalty }),
                     ...(options.topP !== undefined && { topP: options.topP })
                 }
             })
         } catch (error) {
-            console.error('OpenAI API Error:', error)
+            console.error('Anthropic API Error:', error)
             throw error
         }
     }
@@ -60,38 +57,36 @@ class OpenAIService {
                 groupId: options.groupId,
                 ...(options.temperature !== undefined && { temperature: options.temperature }),
                 ...(options.maxTokens !== undefined && { maxTokens: options.maxTokens }),
-                ...(options.presencePenalty !== undefined && { presencePenalty: options.presencePenalty }),
-                ...(options.frequencyPenalty !== undefined && { frequencyPenalty: options.frequencyPenalty }),
                 ...(options.topP !== undefined && { topP: options.topP })
             }
 
             // 先移除之前的监听器
-            ipcRenderer.removeAllListeners('openai:stream-data')
-            ipcRenderer.removeAllListeners('openai:stream-error')
-            ipcRenderer.removeAllListeners('openai:stream-stop')
+            ipcRenderer.removeAllListeners('anthropic:stream-data')
+            ipcRenderer.removeAllListeners('anthropic:stream-error')
+            ipcRenderer.removeAllListeners('anthropic:stream-stop')
 
             // 添加新的监听器
-            ipcRenderer.on('openai:stream-data', (event, { content, isDone }) => {
+            ipcRenderer.on('anthropic:stream-data', (event, { content, isDone }) => {
                 onData(content, isDone)
             })
 
-            ipcRenderer.on('openai:stream-error', (event, error) => {
+            ipcRenderer.on('anthropic:stream-error', (event, error) => {
                 throw new Error(error)
             })
 
-            ipcRenderer.on('openai:stream-stop', () => {
+            ipcRenderer.on('anthropic:stream-stop', () => {
                 onData('', true)
             })
 
-            ipcRenderer.send('openai:stream-chat', {
+            ipcRenderer.send('anthropic:stream-chat', {
                 messages: cleanMessages,
                 options: cleanOptions
             })
         } catch (error) {
-            console.error('OpenAI Stream Error:', error)
+            console.error('Anthropic Stream Error:', error)
             throw error
         }
     }
 }
 
-export default OpenAIService
+export default AnthropicService

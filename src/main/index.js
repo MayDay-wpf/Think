@@ -8,6 +8,7 @@ import { initializeChatServer } from './chatServer'
 import { registerAdvanceSettingsHandlers } from './advanceSettings'
 import { setupGeneralSettingsHandlers } from './generalSettings'
 import { initOpenAIHandlers } from './ai/ipc/openai'
+import { initAnthropicHandlers } from './ai/ipc/anthropic'
 import { setupSearchEngineHandlers } from './searchengineSetting'
 
 
@@ -78,6 +79,8 @@ app.whenReady().then(async () => {
   setupGeneralSettingsHandlers()
   // 初始化 OpenAI 处理程序
   initOpenAIHandlers()
+  // 初始化 Anthropic 处理程序
+  initAnthropicHandlers()
   // 设置搜索引擎处理程序
   setupSearchEngineHandlers()
   // Create window
@@ -99,5 +102,13 @@ app.on('window-all-closed', () => {
   }
 })
 
+ipcMain.handle('open-external-link', async (event, url) => {
+  try {
+    await shell.openExternal(url);
+  } catch (error) {
+    console.error('Failed to open external link:', error);
+    throw error;
+  }
+});
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.

@@ -1,4 +1,5 @@
 import OpenAIService from '../ai/openai';
+import AnthropicService from '../ai/anthropic';
 
 class ChatService {
   constructor() {
@@ -11,6 +12,13 @@ class ChatService {
       case 'deepseek':
       case 'ollama':
         this.services[channel] = new OpenAIService(
+          config.apiKey,
+          config.baseURL || undefined
+        );
+        break;
+      case 'anthropic':
+        // 初始化 Anthropic 服务
+        this.services[channel] = new AnthropicService(
           config.apiKey,
           config.baseURL || undefined
         );
@@ -30,6 +38,9 @@ class ChatService {
       case 'openai':
       case 'deepseek':
       case 'ollama':
+        service.stopGeneration();
+        break;
+      case 'anthropic':
         service.stopGeneration();
         break;
       // 其他渠道的处理逻辑
@@ -95,6 +106,33 @@ class ChatService {
             }
           );
         }
+        break;
+      case 'anthropic':
+        if (useStream) {
+          return await service.streamChatCompletion(
+            messages,
+            {
+              channel: channel,
+              model: model,
+              chatId: settings.chatId,
+              groupId: settings.groupId,
+             ...advancedOptions
+            },
+            onData  // 传递回调函数
+          );
+        } else {
+          return await service.chatCompletion(
+            messages,
+            {
+              channel: channel,
+              model: model,
+              chatId: settings.chatId,
+              groupId: settings.groupId,
+            ...advancedOptions
+            }
+          );
+        }
+        break;
       default:
         throw new Error(`Unsupported channel: ${channel}`);
     }

@@ -348,6 +348,25 @@ const renderMarkdown = (content) => {
                     });
                 }
             });
+            // 添加外部链接的处理
+            const links = document.querySelectorAll('.markdown-body a[href]');
+            links.forEach(link => {
+                if (!link.dataset.hasListener) {
+                    link.dataset.hasListener = 'true';
+                    link.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        const href = link.getAttribute('href');
+                        if (href) {
+                            try {
+                                await window.electron.ipcRenderer.invoke('open-external-link', href);
+                            } catch (error) {
+                                console.error('Failed to open external link:', error);
+                                ElMessage.error('Error' + error.message);
+                            }
+                        }
+                    });
+                }
+            });
             // 处理 mermaid 图表
             try {
                 const mermaidDivs = document.querySelectorAll('.mermaid:not([data-processed="true"])');
@@ -647,7 +666,7 @@ const stopGeneration = () => {
 // 高度纠正
 const handleHeightChange = (height) => {
     if (chatWindow.value) {
-        chatWindow.value.style.height = `calc(100vh - ${height + 72}px)`;
+        chatWindow.value.style.height = `calc(100vh - ${height + 74}px)`;
     }
 };
 
