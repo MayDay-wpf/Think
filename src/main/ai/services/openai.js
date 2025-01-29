@@ -247,23 +247,25 @@ class OpenAIService {
                         // 检查是否是完整的函数调用
                         try {
                             const json = JSON.parse(accumulated.function.arguments);
-                            const searchResults = await handleWebSearch([accumulated]);
-                            if (searchResults) {
-                                const newStream = await this._processSearchResults(searchResults, requestMessages, { ...options, stream: true });
+                            if (accumulated.function.name === 'web_search') {
+                                const searchResults = await handleWebSearch([accumulated]);
+                                if (searchResults) {
+                                    const newStream = await this._processSearchResults(searchResults, requestMessages, { ...options, stream: true });
 
-                                for await (const newChunk of newStream) {
-                                    const newContent = newChunk.choices[0]?.delta?.content || '';
-                                    if (newContent) {
-                                        accumulatedResponse += newContent;
-                                        this.currentSession.accumulatedResponse = accumulatedResponse;
-                                        onData(newContent, false);
+                                    for await (const newChunk of newStream) {
+                                        const newContent = newChunk.choices[0]?.delta?.content || '';
+                                        if (newContent) {
+                                            accumulatedResponse += newContent;
+                                            this.currentSession.accumulatedResponse = accumulatedResponse;
+                                            onData(newContent, false);
+                                        }
+                                        if (newChunk.usage) {
+                                            totalInputTokens = newChunk.usage.prompt_tokens;
+                                            totalOutputTokens = newChunk.usage.completion_tokens;
+                                        }
                                     }
-                                    if (newChunk.usage) {
-                                        totalInputTokens = newChunk.usage.prompt_tokens;
-                                        totalOutputTokens = newChunk.usage.completion_tokens;
-                                    }
+                                    accumulatedToolCalls.delete(toolCall.index);
                                 }
-                                accumulatedToolCalls.delete(toolCall.index);
                             }
                         } catch (e) {
                             // JSON 解析失败，说明参数还不完整

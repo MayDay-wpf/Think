@@ -11,6 +11,9 @@ class ChatService {
       case 'openai':
       case 'deepseek':
       case 'ollama':
+      case 'qwen':
+      case 'siliconflow':
+      case 'gemini':
         this.services[channel] = new OpenAIService(
           config.apiKey,
           config.baseURL || undefined
@@ -38,6 +41,9 @@ class ChatService {
       case 'openai':
       case 'deepseek':
       case 'ollama':
+      case 'qwen':
+      case 'siliconflow':
+      case 'gemini':
         service.stopGeneration();
         break;
       case 'anthropic':
@@ -82,6 +88,9 @@ class ChatService {
       case 'openai':
       case 'deepseek':
       case 'ollama':
+      case 'qwen':
+      case 'siliconflow':
+      case 'gemini':
         if (useStream) {
           return await service.streamChatCompletion(
             messages,
@@ -116,7 +125,7 @@ class ChatService {
               model: model,
               chatId: settings.chatId,
               groupId: settings.groupId,
-             ...advancedOptions
+              ...advancedOptions
             },
             onData  // 传递回调函数
           );
@@ -128,7 +137,7 @@ class ChatService {
               model: model,
               chatId: settings.chatId,
               groupId: settings.groupId,
-            ...advancedOptions
+              ...advancedOptions
             }
           );
         }

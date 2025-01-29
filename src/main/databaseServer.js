@@ -79,7 +79,7 @@ async function initializeDatabase() {
           IconPath: '@renderer/assets/icons/gemini.svg',
           Name: 'Gemini',
           Code: 'gemini',
-          BaseURL: 'https://api.siliconflow.cn/v1',
+          BaseURL: 'https://generativelanguage.googleapis.com/v1beta/openai',
           APIKey: 'sz-xxxxxxxxxx',
           IsEnabled: 1,
           Seq: 4

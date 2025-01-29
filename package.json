@@ -24,6 +24,7 @@
     "@electron-toolkit/utils": "^3.0.0",
     "@electron/remote": "^2.1.2",
     "@element-plus/icons-vue": "^2.3.1",
+    "@google/generative-ai": "^0.21.0",
     "@vueuse/core": "^12.5.0",
     "axios": "^1.7.9",
     "clipboard": "^2.0.11",

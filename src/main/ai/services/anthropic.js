@@ -234,8 +234,6 @@ class AnthropicService {
                     }
                 }
 
-                console.log('chunk:', chunk);
-                console.log('-----------------------');
                 if (chunk.delta && chunk.delta.type === 'input_json_delta' && chunk.delta.partial_json) {
 
                     accumulated = accumulatedToolCalls.get(chunk.index);
@@ -264,7 +262,7 @@ class AnthropicService {
             }
 
             let searchResults = null;
-            if (accumulated) {
+            if (accumulated && accumulated.function.name === 'web_search') {
                 searchResults = await handleWebSearch([accumulated]);
                 console.log('searchResults:', searchResults);
                 if (searchResults) {
