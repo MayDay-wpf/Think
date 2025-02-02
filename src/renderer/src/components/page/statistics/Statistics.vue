@@ -113,18 +113,26 @@ const createHeatmapOption = (statistics) => {
     };
 };
 
+const formatDate = (date) => {
+    return date.toISOString().split('T')[0];
+};
+
 const getCalendarRange = () => {
     const end = new Date();
     const start = new Date();
     start.setTime(start.getTime() - 365 * 24 * 60 * 60 * 1000);
-    return [start.toISOString().split('T')[0], end.toISOString().split('T')[0]];
+    return [formatDate(start), formatDate(end)];
 };
 
 const updateHeatmap = async (startDate, endDate) => {
     try {
+        // 确保传入的日期字符串被转换为标准格式
+        const start = startDate ? formatDate(new Date(startDate)) : undefined;
+        const end = endDate ? formatDate(new Date(endDate)) : undefined;
+        
         const statistics = await window.electron.ipcRenderer.invoke('get-daily-tokens-statistics', {
-            startDate,
-            endDate
+            startDate: start,
+            endDate: end
         });
 
         if (heatmapInstance.value) {
@@ -132,6 +140,25 @@ const updateHeatmap = async (startDate, endDate) => {
         }
     } catch (error) {
         console.error('Error loading daily statistics:', error);
+    }
+};
+
+const updateChart = async (startDate, endDate) => {
+    try {
+        // 确保传入的日期字符串被转换为标准格式
+        const start = startDate ? formatDate(new Date(startDate)) : undefined;
+        const end = endDate ? formatDate(new Date(endDate)) : undefined;
+
+        const statistics = await window.electron.ipcRenderer.invoke('get-model-tokens-statistics', {
+            startDate: start,
+            endDate: end
+        });
+
+        if (chartInstance.value) {
+            chartInstance.value.setOption(createChartOption(statistics));
+        }
+    } catch (error) {
+        console.error('Error loading statistics:', error);
     }
 };
 
@@ -223,21 +250,6 @@ const createChartOption = (statistics) => {
             }
         ]
     };
-};
-
-const updateChart = async (startDate, endDate) => {
-    try {
-        const statistics = await window.electron.ipcRenderer.invoke('get-model-tokens-statistics', {
-            startDate,
-            endDate
-        });
-
-        if (chartInstance.value) {
-            chartInstance.value.setOption(createChartOption(statistics));
-        }
-    } catch (error) {
-        console.error('Error loading statistics:', error);
-    }
 };
 
 const handleDateChange = (val) => {
