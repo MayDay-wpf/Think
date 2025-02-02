@@ -92,10 +92,11 @@ class OpenAIService {
                     2. Current time: ${new Date().toLocaleString()}
                     3. Answer based on the search results below
                     4. Format requirements:
-                       - Use markdown syntax for all links: [title](url)
+                       - Use markdown syntax for all Url links
                        - Quote relevant information using markdown blockquotes (>)
                        - Organize information with proper markdown headings
                        - Always cite sources at the end using numbered references
+                       - In your response, please include a source link at any position
                     5. Ensure your response is accurate and objective
                     
                     Search Results:
