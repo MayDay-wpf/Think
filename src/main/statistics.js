@@ -54,7 +54,7 @@ function getDailyTokensStatistics(startDate, endDate) {
 
         const params = [];
         if (startDate && endDate) {
-            query += ` WHERE CreatedAt >= ? AND CreatedAt <= ?`;
+            query += ` WHERE date(CreatedAt) >= date(?) AND date(CreatedAt) <= date(?)`;
             params.push(startDate.toISOString(), endDate.toISOString());
         }
 
@@ -67,16 +67,34 @@ function getDailyTokensStatistics(startDate, endDate) {
                 return;
             }
             
-            const statistics = rows.map(row => ({
-                date: row.Date,
-                totalTokens: row.TotalTokens
-            }));
-            
+            // 确保返回的数据包含日期范围内的所有日期，没有数据的日期设置为0
+            const statistics = fillMissingDates(rows, startDate, endDate);
             resolve(statistics);
         });
 
         db.close();
     });
+}
+
+// 添加一个辅助函数来填充缺失的日期
+function fillMissingDates(rows, startDate, endDate) {
+    const result = [];
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    // 创建一个映射来存储现有数据
+    const dataMap = new Map(rows.map(row => [row.Date, row.TotalTokens]));
+    
+    // 遍历日期范围
+    for (let date = start; date <= end; date.setDate(date.getDate() + 1)) {
+        const dateStr = date.toISOString().split('T')[0];
+        result.push({
+            date: dateStr,
+            totalTokens: dataMap.get(dateStr) || 0
+        });
+    }
+    
+    return result;
 }
 
 // 修改 IPC 监听器

@@ -916,6 +916,9 @@ const previewImage = (url) => {
     overflow-y: auto;
     padding: 10px 10px 10px 10px;
     flex-grow: 1;
+    overflow-x: hidden;
+    word-wrap: break-word;
+    word-break: break-word;
 }
 
 .message {
@@ -941,8 +944,13 @@ const previewImage = (url) => {
     padding: 30px;
     padding: 30px;
     border-radius: 5px;
-    max-width: 100%;
+    /* 修改最大宽度 */
+    max-width: calc(100% - 60px);
+    /* 减去左右padding的值 */
     position: relative;
+    /* 添加以下属性 */
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .message-content {
@@ -1078,8 +1086,11 @@ const previewImage = (url) => {
     background-color: var(--el-fill-color-light);
     border-radius: 6px;
     padding: 12px;
-    overflow: auto;
+    overflow-x: auto;
     margin: 8px 0;
+    /* 添加以下属性 */
+    white-space: pre-wrap;
+    word-wrap: break-word;
 }
 
 .markdown-body :deep(code) {
@@ -1191,6 +1202,8 @@ const previewImage = (url) => {
     flex-wrap: wrap;
     gap: 8px;
     margin-top: 8px;
+    /* 添加以下属性 */
+    max-width: 100%;
 }
 
 .message-image {
@@ -1252,6 +1265,9 @@ const previewImage = (url) => {
     border-radius: 4px;
     max-height: 200px;
     overflow-y: auto;
+    /* 添加以下属性 */
+    max-width: 100%;
+    overflow-x: hidden;
 }
 
 .left-controls {

@@ -31,10 +31,11 @@ const heatmapInstance = ref(null);
 const createHeatmapOption = (statistics) => {
     // 处理数据
     const data = statistics.map(item => {
-        const [year, month, day] = item.date.split('-');
         return [item.date, item.totalTokens];
     });
 
+    const maxValue = Math.max(...statistics.map(item => item.totalTokens));
+    
     return {
         tooltip: {
             position: 'top',
@@ -44,8 +45,8 @@ const createHeatmapOption = (statistics) => {
         },
         visualMap: {
             min: 0,
-            max: Math.max(...statistics.map(item => item.totalTokens)),
-            calculable: false,
+            max: maxValue || 100,
+            calculable: true,
             orient: 'horizontal',
             left: 'center',
             bottom: '0%',
@@ -70,7 +71,7 @@ const createHeatmapOption = (statistics) => {
             splitLine: {
                 show: false
             },
-            yearLabel: false,
+            yearLabel: { show: false },
             dayLabel: {
                 firstDay: 1,
                 nameMap: [
@@ -114,7 +115,11 @@ const createHeatmapOption = (statistics) => {
 };
 
 const formatDate = (date) => {
-    return date.toISOString().split('T')[0];
+    // 使用 YYYY-MM-DD 格式，并考虑本地时区
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 };
 
 const getCalendarRange = () => {
@@ -126,17 +131,22 @@ const getCalendarRange = () => {
 
 const updateHeatmap = async (startDate, endDate) => {
     try {
-        // 如果没有指定日期范围，使用默认的一年范围
         let start, end;
         if (startDate && endDate) {
-            start = formatDate(new Date(startDate));
-            end = formatDate(new Date(endDate));
+            // 确保日期包含当天
+            start = new Date(startDate);
+            end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
         } else {
-            end = formatDate(new Date());
+            end = new Date();
+            end.setHours(23, 59, 59, 999);
             const startDate = new Date();
             startDate.setTime(startDate.getTime() - 365 * 24 * 60 * 60 * 1000);
-            start = formatDate(startDate);
+            start = startDate;
         }
+        
+        start = formatDate(start);
+        end = formatDate(end);
         
         const statistics = await window.electron.ipcRenderer.invoke('get-daily-tokens-statistics', {
             startDate: start,
