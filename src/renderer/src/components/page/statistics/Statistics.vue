@@ -126,20 +126,39 @@ const getCalendarRange = () => {
 
 const updateHeatmap = async (startDate, endDate) => {
     try {
-        // 确保传入的日期字符串被转换为标准格式
-        const start = startDate ? formatDate(new Date(startDate)) : undefined;
-        const end = endDate ? formatDate(new Date(endDate)) : undefined;
+        // 如果没有指定日期范围，使用默认的一年范围
+        let start, end;
+        if (startDate && endDate) {
+            start = formatDate(new Date(startDate));
+            end = formatDate(new Date(endDate));
+        } else {
+            end = formatDate(new Date());
+            const startDate = new Date();
+            startDate.setTime(startDate.getTime() - 365 * 24 * 60 * 60 * 1000);
+            start = formatDate(startDate);
+        }
         
         const statistics = await window.electron.ipcRenderer.invoke('get-daily-tokens-statistics', {
             startDate: start,
             endDate: end
         });
 
-        if (heatmapInstance.value) {
+        if (heatmapInstance.value && statistics) {
             heatmapInstance.value.setOption(createHeatmapOption(statistics));
         }
     } catch (error) {
         console.error('Error loading daily statistics:', error);
+    }
+};
+
+// 修改日期选择器的处理函数
+const handleDateChange = (val) => {
+    if (val) {
+        updateChart(val[0], val[1]);
+        updateHeatmap(val[0], val[1]);  // 添加热力图的更新
+    } else {
+        updateChart();
+        updateHeatmap();  // 添加热力图的更新
     }
 };
 
@@ -250,14 +269,6 @@ const createChartOption = (statistics) => {
             }
         ]
     };
-};
-
-const handleDateChange = (val) => {
-    if (val) {
-        updateChart(val[0], val[1]);
-    } else {
-        updateChart();
-    }
 };
 
 onMounted(async () => {
