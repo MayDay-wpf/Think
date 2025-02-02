@@ -10,6 +10,8 @@
 - [x] Chat
 - [x] Images Chat
 - [x] Files Chat
+- [x] Settings
+- [x] Statistics
 - [] Image Generation
 - [] Plugin by function calling
 - [] Knowledge
@@ -17,13 +19,13 @@
 - [x] DeepSeek
 - [x] Ollama
 - [x] Anthropic
-- [] Gmini
-- [] Qwen
+- [x] Gmini
+- [x] Qwen
 - [] GLM
 - [] Baichuan
 - [] MiniMax
 - [] DouBao
-- [] SiliconFlow
+- [x] SiliconFlow
 - [] DALL-E
 - [] MidJourney
 
