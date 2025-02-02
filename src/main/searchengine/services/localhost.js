@@ -2,10 +2,11 @@ import axios from 'axios'
 import { HttpsProxyAgent } from 'https-proxy-agent'
 
 export default class YahooService {
-  constructor(proxyport) {
+  constructor(proxyport, count) {
     this.clientInitialized = false;
     this.clientInitializing = null;
     this.proxyPort = proxyport;
+    this.count = count;
   }
 
   async ensureClientInitialized() {
@@ -110,9 +111,9 @@ export default class YahooService {
         })
         .filter(url => url && !url.includes('/images/') && !url.includes('/video/'));
 
-      // 组装前3条结果
+      // 组装前this.count条结果
       const results = [];
-      for (let i = 0; i < Math.min(5, titles.length); i++) {
+      for (let i = 0; i < Math.min(this.count, titles.length); i++) {
         if (titles[i] && contents[i] && urls[i]) {
           results.push({
             title: titles[i].trim(),

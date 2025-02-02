@@ -21,7 +21,7 @@ export async function handleWebSearch(toolCalls) {
         let searchService;
         switch (preferredEngine.Name) {
             case 'Localhost':
-                searchService = new YahooService(config.proxy_port);
+                searchService = new YahooService(config.proxy_port, config.count);
                 break;
             case 'Serper':
                 searchService = new SerperService(config.apikey, config.baseurl);

@@ -44,7 +44,7 @@ const settingItems = ref([
 }
 .settings-header{
   height: 30px;
-  background-color: var(--el-bg-color);
+  background-color: var(--el-bg-color-overlay);
   border-bottom: 1px solid var(--el-border-color-light);
   display: flex;
   align-items: center;

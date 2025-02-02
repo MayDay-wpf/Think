@@ -10,6 +10,7 @@ import { setupGeneralSettingsHandlers } from './generalSettings'
 import { initOpenAIHandlers } from './ai/ipc/openai'
 import { initAnthropicHandlers } from './ai/ipc/anthropic'
 import { setupSearchEngineHandlers } from './searchengineSetting'
+import { getModelTokensStatistics, getDailyTokensStatistics } from './statistics'
 
 
 
@@ -18,7 +19,7 @@ function createWindow() {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 1200,
-    height: 800,
+    height: 780,
     show: false,
     transparent: true,
     autoHideMenuBar: true,
@@ -83,6 +84,9 @@ app.whenReady().then(async () => {
   initAnthropicHandlers()
   // 设置搜索引擎处理程序
   setupSearchEngineHandlers()
+  // 获取模型统计信息
+  getModelTokensStatistics()
+  getDailyTokensStatistics()
   // Create window
   createWindow()
 

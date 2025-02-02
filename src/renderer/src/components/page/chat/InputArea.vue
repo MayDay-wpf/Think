@@ -328,6 +328,7 @@ const emitHeightChange = () => {
   line-height: 1.5;
   overflow-y: auto;
   background-color: var(--el-bg-color);
+  font-family: inherit;
 }
 
 .input-box:focus {

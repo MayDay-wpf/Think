@@ -2,30 +2,49 @@
     <div class="chat-container">
         <div class="chat-main">
             <div class="model-list">
-                <el-dropdown @command="handleModelChange" trigger="click" v-if="models.length > 0">
-                    <div class="dropdown-trigger">
-                        <img :src="selectedModelSvg" class="model-icon" alt="Model Icon" />
-                        <span class="model-name">{{ selectedModelLabel }}</span>
-                        <el-icon class="el-icon--right">
-                            <arrow-down />
-                        </el-icon>
-                    </div>
-                    <template #dropdown>
-                        <el-dropdown-menu>
-                            <div class="search-box">
-                                <el-input v-model="searchQuery" :placeholder="t('chatPage.searchModel')" clearable
-                                    @input="handleSearch" />
-                            </div>
-                            <el-dropdown-item v-for="model in filteredModels" :key="model.value" :command="model.value">
-                                <div class="model-option">
-                                    <img :src="model.svg" class="model-icon" alt="Model Icon" />
-                                    {{ model.label }}
+                <div class="left-controls">
+                    <el-dropdown @command="handleModelChange" trigger="click" v-if="models.length > 0">
+                        <div class="dropdown-trigger">
+                            <img :src="selectedModelSvg" class="model-icon" alt="Model Icon" />
+                            <span class="model-name">{{ selectedModelLabel }}</span>
+                            <el-icon class="el-icon--right">
+                                <arrow-down />
+                            </el-icon>
+                        </div>
+                        <template #dropdown>
+                            <el-dropdown-menu class="model-dropdown-menu">
+                                <div class="search-box">
+                                    <el-input v-model="searchQuery" :placeholder="t('chatPage.searchModel')" clearable
+                                        @input="handleSearch" />
                                 </div>
-                            </el-dropdown-item>
-                        </el-dropdown-menu>
-                    </template>
-                </el-dropdown>
-
+                                <div class="model-list-container">
+                                    <el-dropdown-item v-for="model in filteredModels" :key="model.value"
+                                        :command="model.value">
+                                        <div class="model-option">
+                                            <img :src="model.svg" class="model-icon" alt="Model Icon" />
+                                            {{ model.label }}
+                                        </div>
+                                    </el-dropdown-item>
+                                </div>
+                            </el-dropdown-menu>
+                        </template>
+                    </el-dropdown>
+                    <el-dropdown trigger="click" class="system-prompt">
+                        <div class="dropdown-trigger">
+                            <i class="ri-sparkling-line"></i>
+                            <span class="prompt-label">{{ t('chatPage.systemPrompt') }}</span>
+                            <el-icon class="el-icon--right"><arrow-down /></el-icon>
+                        </div>
+                        <template #dropdown>
+                            <el-dropdown-menu>
+                                <div class="prompt-input-box">
+                                    <el-input v-model="systemPrompt" type="textarea" :rows="4"
+                                        :placeholder="t('chatPage.enterSystemPrompt')" />
+                                </div>
+                            </el-dropdown-menu>
+                        </template>
+                    </el-dropdown>
+                </div>
                 <div class="right-controls">
                     <el-dropdown @command="handleLanguageChange" trigger="click">
                         <div class="dropdown-trigger">&nbsp;
@@ -122,6 +141,8 @@ import 'highlight.js/lib/languages/css';
 import texmath from 'markdown-it-texmath'
 import katex from 'katex'
 import mermaid from 'mermaid';
+import DOMPurify from 'dompurify';
+
 
 
 // 多语言- start
@@ -144,6 +165,7 @@ const handleLanguageChange = (lang) => {
 };
 // 多语言- end
 
+const systemPrompt = ref('');
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
 const messages = ref([]);
@@ -183,6 +205,7 @@ const md = new MarkdownIt({
         return `<div class="code-block-wrapper"><div class="code-copy-btn"><i class="ri-file-copy-2-line"></i></div><pre><code class="hljs">${md.utils.escapeHtml(str)}</code></pre></div>`;
     }
 });
+
 md.use(texmath, {
     engine: katex,
     delimiters: ['dollars', 'brackets'], // 同时支持 $ 和 [ 作为分隔符
@@ -329,9 +352,51 @@ watch(isDark, async (newValue) => {
 const renderMarkdown = (content) => {
     if (!content) return '';
     try {
-        const html = md.render(content);
+        // 处理 think 标签
+        let isThinking = false;
+        let thinkContent = '';
+        const processedContent = content.replace(/<think>([\s\S]*?)(?:<\/think>|$)/g, (match, p1) => {
+            isThinking = true;
+            thinkContent = p1;
+            const hasEndTag = match.includes('</think>');
+            return `<div class="thinking-block">
+                <div class="thinking-header">
+                    <i class="ri-brain-line"></i>
+                    ${hasEndTag ? 'AI 的思考过程' : 'AI 正在思考...'}
+                    <el-button class="toggle-btn" size="small">
+                        <i class="ri-arrow-down-s-line"></i>
+                    </el-button>
+                </div>
+                <div class="thinking-content">${md.render(p1)}</div>
+            </div>`;
+        });
+
+        const html = DOMPurify.sanitize(md.render(processedContent), {
+            ADD_TAGS: ['el-button'],
+            ADD_ATTR: ['size', 'class', 'style'],
+            ALLOW_DATA_ATTR: true
+        });
         // 在 nextTick 中添加事件监听
         nextTick(async () => {
+            const thinkingBlocks = document.querySelectorAll('.thinking-block');
+            thinkingBlocks.forEach(block => {
+                if (!block.dataset.hasListener) {
+                    block.dataset.hasListener = 'true';
+                    const toggleBtn = block.querySelector('.thinking-header');
+                    const content = block.querySelector('.thinking-content');
+                    if (toggleBtn && content) {
+                        toggleBtn.addEventListener('click', () => {
+                            const isExpanded = content.style.display !== 'none';
+                            content.style.display = isExpanded ? 'none' : 'block';
+                            toggleBtn.querySelector('i').style.transform =
+                                isExpanded ? 'rotate(0deg)' : 'rotate(180deg)';
+                        });
+                        // 默认展开
+                        toggleBtn.querySelector('i').style.transform = 'rotate(180deg)';
+                        content.style.display = 'block';
+                    }
+                }
+            });
             const copyButtons = document.querySelectorAll('.code-copy-btn');
             copyButtons.forEach(button => {
                 if (!button.dataset.hasListener) {
@@ -559,7 +624,21 @@ const handleSend = async (message) => {
             console.error('Failed to initialize chat service:', error);
             ElMessage.error('Error：' + error.message);
         }
-        const chatMessages = messages.value.filter(m => !m.loading && (m.sender === 'user' || m.sender === 'ai'));
+        const chatMessages = messages.value.filter(m => !m.loading && (m.sender === 'user' || m.sender === 'ai')).map(m => {
+            // 复制消息对象，避免修改原始消息
+            const processedMessage = { ...m };
+            // 如果是 AI 消息，移除所有 think 标签及其内容
+            if (m.sender === 'ai') {
+                processedMessage.content = m.content.replace(/<think>[\s\S]*?(?:<\/think>|$)/g, '');
+            }
+            return processedMessage;
+        });
+        if (systemPrompt.value) {
+            chatMessages.unshift({
+                role: 'system',
+                content: systemPrompt.value
+            });
+        }
         const useStream = generalSettings.value?.IsStream === 1 ?? false;
         const chatOptions = {
             chatId: currentChatId.value,
@@ -656,6 +735,9 @@ const stopGeneration = () => {
     try {
         ChatService.stopGeneration(currentModel.channel);
         isSending.value = false;
+        messages.value.forEach(message => {
+            message.loading = false;
+        });
     } catch (error) {
         console.error('Failed to stop generation:', error);
         ElMessage.error('Error:' + error.message);
@@ -777,9 +859,13 @@ const deleteGroup = async (groupId) => {
         // 从当前消息列表中移除该组对话
         messages.value = messages.value.filter(msg => msg.groupId !== groupId);
         ElMessage.success(t("chatPage.deletesuccess"));
+
+        // 修改这里的逻辑
         if (messages.value.length === 0) {
-            emit('new-session');
-            emit('chat-completed');
+            currentChatId.value = null; // 重置当前聊天ID
+            await nextTick(); // 等待 DOM 更新
+            emit('chat-completed'); // 先触发聊天完成事件
+            emit('new-session'); // 再触发新会话事件
         }
     } catch (err) {
         if (err !== 'cancel') {
@@ -910,6 +996,17 @@ const previewImage = (url) => {
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.model-dropdown-menu {
+    max-height: 500px;
+    overflow: hidden;
+}
+
+.model-list-container {
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .right-controls {
@@ -1157,6 +1254,35 @@ const previewImage = (url) => {
     overflow-y: auto;
 }
 
+.left-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    -webkit-app-region: no-drag;
+}
+
+.system-prompt {
+    margin-left: 8px;
+}
+
+.system-prompt i {
+    font-size: 20px;
+}
+
+.prompt-label {
+    margin: 0 4px;
+    font-size: 14px;
+}
+
+.prompt-input-box {
+    padding: 12px;
+    min-width: 300px;
+}
+
+.prompt-input-box .el-input {
+    width: 100%;
+}
+
 :deep(.mermaid) {
     text-align: center;
     margin: 1em 0;
@@ -1177,5 +1303,46 @@ const previewImage = (url) => {
     background-color: #fff2f0;
     border: 1px solid #ffccc7;
     border-radius: 4px;
+}
+
+:deep(.thinking-block) {
+    margin: 1em 0;
+    border: 1px solid var(--el-border-color);
+    border-radius: 8px;
+    background-color: var(--el-fill-color-lighter);
+}
+
+:deep(.thinking-header) {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    border-radius: 8px 8px 0 0;
+    font-size: 14px;
+    color: var(--el-text-color-regular);
+    cursor: pointer;
+}
+
+:deep(.thinking-header i.ri-brain-line) {
+    margin-right: 8px;
+    font-size: 16px;
+    color: var(--el-color-primary);
+}
+
+:deep(.thinking-content) {
+    padding: 16px;
+    border-top: 1px solid var(--el-border-color);
+}
+
+:deep(.toggle-btn) {
+    margin-left: auto;
+    padding: 2px 4px;
+}
+
+:deep(.toggle-btn i) {
+    transition: transform 0.3s ease;
+}
+
+:deep(.thinking-block.expanded .toggle-btn i) {
+    transform: rotate(180deg);
 }
 </style>

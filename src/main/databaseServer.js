@@ -393,7 +393,7 @@ async function initializeDatabase() {
             {
               Name: 'Localhost',
               ImagePath: '@renderer/assets/searchengineicon/localhost.svg',
-              Config: '{"proxy_port":"7890"}',
+              Config: '{"proxy_port":"7890","count":"5"}',
               Seq: 1
             },
             {

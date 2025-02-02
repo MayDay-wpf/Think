@@ -19,12 +19,12 @@ class OpenAIService {
                 this.abortController.abort();
 
                 if (this.currentSession) {
-                    const { messages, options, accumulatedResponse, totalInputTokens, totalOutputTokens } = this.currentSession;
+                    const { messages, options, accumulatedResponse } = this.currentSession;
                     const chatId = options.chatId;
                     const groupId = options.groupId;
                     const channel = options.channel;
 
-                    if (accumulatedResponse) {
+                    if (accumulatedResponse && !this.currentSession.historySaved) {
                         const userContent = messages[messages.length - 1].content;
                         const imageList = messages.filter(msg => msg.images && msg.images.length > 0)
                             .map(msg => msg.images).flat();
@@ -41,40 +41,31 @@ class OpenAIService {
                             imageList,
                             fileList
                         );
-                        // 如果有 token 数据，直接保存
-                        if (totalInputTokens > 0 && totalOutputTokens > 0) {
-                            await saveUsageHistory(
-                                groupId,
-                                options.model,
-                                totalInputTokens,
-                                totalOutputTokens
-                            );
-                        } else {
-                            // 如果没有 token 数据，计算所有历史消息的 token
-                            const model = options.model;
-                            const enc = await tiktoken.encodingForModel('gpt-4o');
-                            try {
-                                let inputTokens = 0;
-                                // 计算所有历史消息的 token
-                                for (const msg of messages) {
-                                    const content = msg.content;
-                                    console.log('content:' + content);
-                                    inputTokens += enc.encode(content).length;
-                                }
-                                const outputTokens = enc.encode(accumulatedResponse).length;
 
-                                console.log('Calculated tokens:', inputTokens, outputTokens);
-                                if (inputTokens > 0 || outputTokens > 0) {
-                                    await saveUsageHistory(
-                                        groupId,
-                                        model,
-                                        inputTokens,
-                                        outputTokens
-                                    );
-                                }
-                            } finally {
+                        // 标记历史记录已保存
+                        this.currentSession.historySaved = true;
 
+                        // 计算并保存 token 使用情况
+                        const model = options.model;
+                        const enc = await tiktoken.encodingForModel('gpt-4o');
+                        try {
+                            let inputTokens = 0;
+                            for (const msg of messages) {
+                                const content = msg.content;
+                                inputTokens += enc.encode(content).length;
                             }
+                            const outputTokens = enc.encode(accumulatedResponse).length;
+
+                            if (inputTokens > 0 || outputTokens > 0) {
+                                await saveUsageHistory(
+                                    groupId,
+                                    model,
+                                    inputTokens,
+                                    outputTokens
+                                );
+                            }
+                        } finally {
+                            enc.free();
                         }
                     }
                     this.currentSession = null;
@@ -96,11 +87,19 @@ class OpenAIService {
 
         requestMessages.push({
             role: 'user',
-            content: `# Language using the user's language.\n
-                      # Current time:${new Date().toLocaleString()} \n
-                      # Please answer the user's question based on the search results provided below.\n
-                      # Ensure your response is accurate and objective, citing relevant information from the search results and including links to the sources
-                      ：\n${searchResults}`
+            content: `# Instructions
+                    1. Use the user's language for the response
+                    2. Current time: ${new Date().toLocaleString()}
+                    3. Answer based on the search results below
+                    4. Format requirements:
+                       - Use markdown syntax for all links: [title](url)
+                       - Quote relevant information using markdown blockquotes (>)
+                       - Organize information with proper markdown headings
+                       - Always cite sources at the end using numbered references
+                    5. Ensure your response is accurate and objective
+                    
+                    Search Results:
+                    ${searchResults}`
         });
 
         const completion = await this.client.chat.completions.create({
@@ -194,17 +193,16 @@ class OpenAIService {
             totalInputTokens: 0,
             totalOutputTokens: 0
         };
-        console.log(messages);
+
         try {
             this.abortController = new AbortController();
             const chatId = options.chatId;
             const groupId = options.groupId;
             const channel = options.channel;
-            const hasOnlineMessage = messages.some(msg => msg.online);
             let accumulatedResponse = '';
 
             const requestMessages = messages.map(msg => this._formatMessage(msg));
-            console.log('requestMessages:', requestMessages);
+            const hasOnlineMessage = messages.some(msg => msg.online);
             const stream = await this.client.chat.completions.create({
                 model: options.model || 'gpt-4o-mini',
                 messages: requestMessages,
@@ -219,12 +217,12 @@ class OpenAIService {
 
             let totalInputTokens = 0;
             let totalOutputTokens = 0;
-
-            let accumulatedToolCalls = new Map(); // 用于累积函数调用数据
-
+            let accumulatedToolCalls = new Map();
+            let accumulated = null;
+            let startthink = false;
             for await (const chunk of stream) {
                 const content = chunk.choices[0]?.delta?.content || '';
-                const reasoningContent = chunk.choices[0]?.delta?.reasoning_content || '';
+                const reasoning_content = chunk.choices[0]?.delta?.reasoning_content || '';
                 const toolCalls = chunk.choices[0]?.delta?.tool_calls;
 
                 if (toolCalls) {
@@ -239,51 +237,38 @@ class OpenAIService {
                             });
                         }
 
-                        const accumulated = accumulatedToolCalls.get(toolCall.index);
+                        accumulated = accumulatedToolCalls.get(toolCall.index);
                         if (toolCall.function?.arguments) {
                             accumulated.function.arguments += toolCall.function.arguments;
                         }
 
-                        // 检查是否是完整的函数调用
                         try {
-                            const json = JSON.parse(accumulated.function.arguments);
-                            if (accumulated.function.name === 'web_search') {
-                                const searchResults = await handleWebSearch([accumulated]);
-                                if (searchResults) {
-                                    const newStream = await this._processSearchResults(searchResults, requestMessages, { ...options, stream: true });
-
-                                    for await (const newChunk of newStream) {
-                                        const newContent = newChunk.choices[0]?.delta?.content || '';
-                                        if (newContent) {
-                                            accumulatedResponse += newContent;
-                                            this.currentSession.accumulatedResponse = accumulatedResponse;
-                                            onData(newContent, false);
-                                        }
-                                        if (newChunk.usage) {
-                                            totalInputTokens = newChunk.usage.prompt_tokens;
-                                            totalOutputTokens = newChunk.usage.completion_tokens;
-                                        }
-                                    }
-                                    accumulatedToolCalls.delete(toolCall.index);
-                                }
-                            }
+                            JSON.parse(accumulated.function.arguments);
+                            accumulatedToolCalls.delete(toolCall.index);
                         } catch (e) {
-                            // JSON 解析失败，说明参数还不完整
                             continue;
                         }
                     }
                 }
-
-                if (content) {
+                if (reasoning_content) {
+                    if (!startthink) {
+                        startthink = true;
+                        accumulatedResponse = '<think>' + reasoning_content;
+                        onData(accumulatedResponse, false);
+                    } else {
+                        accumulatedResponse += reasoning_content;
+                        onData(reasoning_content, false);
+                    }
+                }
+                else if (!reasoning_content && content) {
+                    if(startthink){
+                        startthink = false;
+                        onData('</think>', false);
+                    }
                     accumulatedResponse += content;
-                    this.currentSession.accumulatedResponse = accumulatedResponse;
                     onData(content, false);
                 }
-                if (reasoningContent) {
-                    accumulatedResponse += reasoningContent;
-                    this.currentSession.accumulatedResponse = accumulatedResponse;
-                    onData(reasoningContent, false);
-                }
+                this.currentSession.accumulatedResponse = accumulatedResponse;
 
                 if (chunk.usage) {
                     totalInputTokens = chunk.usage.prompt_tokens;
@@ -291,7 +276,23 @@ class OpenAIService {
                 }
             }
 
-            // 保存完整的对话记录
+            let searchResults = null;
+            if (accumulated && accumulated.function.name === 'web_search') {
+                searchResults = await handleWebSearch([accumulated]);
+                if (searchResults) {
+                    const newStream = await this._processSearchResults(searchResults, requestMessages, { ...options, stream: true });
+
+                    for await (const newChunk of newStream) {
+                        const newContent = newChunk.choices[0]?.delta?.content || '';
+                        if (newContent) {
+                            accumulatedResponse += newContent;
+                            this.currentSession.accumulatedResponse = accumulatedResponse;
+                            onData(newContent, false);
+                        }
+                    }
+                }
+            }
+
             const userContent = messages[messages.length - 1].content;
             const imageList = messages.filter(msg => msg.images && msg.images.length > 0).map(msg => msg.images).flat();
             const fileList = messages.filter(msg => msg.files && msg.files.length > 0).map(msg => msg.files).flat();
@@ -324,7 +325,6 @@ class OpenAIService {
                 onData('', true);
                 return;
             }
-            //console.error('OpenAI Stream Error:', error);
             onData(`Error: ${error.message}`, false);
             onData('', true);
             throw error;

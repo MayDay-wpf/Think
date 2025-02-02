@@ -5,7 +5,9 @@ export default {
   },
   systemmenu: {
     chat: "Chat",
-    settings: "Settings"
+    settings: "Settings",
+    statistics: "Statistics",
+    refresh: "Refresh"
   },
   historylist: {
     newchat: "New Chat",
@@ -31,7 +33,9 @@ export default {
     onlyimage: "Please upload image files only",
     only4image: "You can upload a maximum of four images.",
     unimage: "Please use the image upload button to submit your image files.",
-    only4files: "You can only upload a maximum of four files."
+    only4files: "You can only upload a maximum of four files.",
+    systemPrompt: 'Quick System Prompt',
+    enterSystemPrompt: 'Enter system prompt...'
   },
   settingMenu: {
     preferences: "Preferences",
@@ -56,7 +60,7 @@ export default {
     addmodel: "Add Model",
     editchannel: "Edit Chanel",
     editmodel: "Edit Model",
-    nothavemodel:"No models available",
+    nothavemodel: "No models available",
     edit: "Edit",
     delete: "Delete",
     enable: "Enable",
@@ -107,14 +111,49 @@ export default {
     frequencyPenaltyHint: "Higher values decrease the likelihood to repeat the same information",
     save: "Save Settings"
   },
-  "searchengine": {
-    "editconfig": "Edit Config",
-    "key": "Key",
-    "value": "Value",
-    "noconfig": "No configuration required",
-    "updateconfigsuccess": "Configuration updated successfully",
-    "updateconfigfailed": "Configuration update failed",
-    "updateordersuccess": "Order updated successfully",
-    "updateorderfailed": "Order update failed"
+  searchengine: {
+    editconfig: "Edit Config",
+    key: "Key",
+    value: "Value",
+    noconfig: "No configuration required",
+    updateconfigsuccess: "Configuration updated successfully",
+    updateconfigfailed: "Configuration update failed",
+    updateordersuccess: "Order updated successfully",
+    updateorderfailed: "Order update failed"
+  },
+  statistics: {
+    tokens: "Token Usage Statistics",
+    startdate: "Start Date",
+    enddate: "End Date",
+    to: "To",
+    heatmap: "Tokens Heatmap",
+    usage: "Usage",
+    sum: "Sum",
+    input: "Input",
+    output: "Output",
+    thepastweek: "Past week",
+    thepastmonth: "Past month",
+    thepastquarter: "Past quarter",
+  },
+  calendar: {
+    sunday: "Sun",
+    monday: "Mon",
+    tuesday: "Tue",
+    wednesday: "Wed",
+    thursday: "Thu",
+    friday: "Fri",
+    saturday: "Sat",
+    january: "Jan",
+    february: "Feb",
+    march: "Mar",
+    april: "Apr",
+    may: "May",
+    june: "Jun",
+    july: "Jul",
+    august: "Aug",
+    september: "Sep",
+    october: "Oct",
+    november: "Nov",
+    december: "Dec"
   }
 }

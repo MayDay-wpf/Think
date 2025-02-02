@@ -42,6 +42,16 @@ const routes = [
         component: SearchEngine
       }
     ]
+  },
+  {
+    path: '/statistics',
+    name: 'statistics',
+    component: () => import('../components/page/statistics/Statistics.vue')
+  },
+  {
+    path: '/refresh-page',
+    name: 'refresh-page',
+    component: () => import('../components/RefreshPage.vue')
   }
 ]
 const router = createRouter({
