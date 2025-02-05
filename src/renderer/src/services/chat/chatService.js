@@ -14,6 +14,10 @@ class ChatService {
       case 'qwen':
       case 'siliconflow':
       case 'gemini':
+      case 'bytedance':
+      case 'zhipu':
+      case 'hunyuan':
+      case 'wenxin':
         this.services[channel] = new OpenAIService(
           config.apiKey,
           config.baseURL || undefined
@@ -44,6 +48,10 @@ class ChatService {
       case 'qwen':
       case 'siliconflow':
       case 'gemini':
+      case 'bytedance':
+      case 'zhipu':
+      case 'hunyuan':
+      case 'wenxin':
         service.stopGeneration();
         break;
       case 'anthropic':
@@ -91,6 +99,10 @@ class ChatService {
       case 'qwen':
       case 'siliconflow':
       case 'gemini':
+      case 'bytedance':
+      case 'zhipu':
+      case 'hunyuan':
+      case 'wenxin':
         if (useStream) {
           return await service.streamChatCompletion(
             messages,

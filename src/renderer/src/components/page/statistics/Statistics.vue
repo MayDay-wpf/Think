@@ -35,7 +35,7 @@ const createHeatmapOption = (statistics) => {
     });
 
     const maxValue = Math.max(...statistics.map(item => item.totalTokens));
-    
+
     return {
         tooltip: {
             position: 'top',
@@ -53,7 +53,7 @@ const createHeatmapOption = (statistics) => {
                 color: 'var(--el-text-color-regular)'
             },
             inRange: {
-                color: ['rgba(0, 0, 0, 0)', '#0e4429', '#006d32', '#26a641', '#39d353']
+                color: ['rgba(0, 0, 0, 0)', '#9be9a8', '#40c463', '#30a14e', '#216e39']
             }
         },
         calendar: {
@@ -143,10 +143,10 @@ const updateHeatmap = async (startDate, endDate) => {
             startDate.setTime(startDate.getTime() - 365 * 24 * 60 * 60 * 1000);
             start = startDate;
         }
-        
+
         start = formatDate(start);
         end = formatDate(end);
-        
+
         const statistics = await window.electron.ipcRenderer.invoke('get-daily-tokens-statistics', {
             startDate: start,
             endDate: end

@@ -65,7 +65,7 @@ class OpenAIService {
                                 );
                             }
                         } finally {
-                            enc.free();
+                            //enc.free();
                         }
                     }
                     this.currentSession = null;
@@ -294,6 +294,20 @@ class OpenAIService {
                 }
             }
 
+            if (totalInputTokens === 0 || totalOutputTokens === 0) {
+                // 如果 API 没有返回 token 使用情况，手动计算
+                const enc = await tiktoken.encodingForModel('gpt-4o');
+                try {
+                    for (const msg of messages) {
+                        const content = msg.content;
+                        totalInputTokens += enc.encode(content).length;
+                    }
+                    totalOutputTokens = enc.encode(accumulatedResponse).length;
+                } finally {
+                    //enc.free();
+                }
+            }
+
             const userContent = messages[messages.length - 1].content;
             const imageList = messages.filter(msg => msg.images && msg.images.length > 0).map(msg => msg.images).flat();
             const fileList = messages.filter(msg => msg.files && msg.files.length > 0).map(msg => msg.files).flat();
@@ -323,6 +337,7 @@ class OpenAIService {
             console.error('ERROR NAME:', error.name);
             if (error.name === 'TypeError') {
                 console.log('Request aborted');
+                console.log('Error message:', error.message);
                 onData('', true);
                 return;
             }

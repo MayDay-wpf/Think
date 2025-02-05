@@ -110,6 +110,42 @@ async function initializeDatabase() {
           APIKey: '',
           IsEnabled: 1,
           Seq: 7
+        },
+        {
+          IconPath: '@renderer/assets/icons/bytedance.svg',
+          Name: 'ByteDance',
+          Code: 'bytedance',
+          BaseURL: 'https://ark.cn-beijing.volces.com/api/v3',
+          APIKey: '',
+          IsEnabled: 1,
+          Seq: 8
+        },
+        {
+          IconPath: '@renderer/assets/icons/zhipu.svg',
+          Name: 'Zhipu',
+          Code: 'zhipu',
+          BaseURL: 'https://open.bigmodel.cn/api/paas/v4',
+          APIKey: '',
+          IsEnabled: 1,
+          Seq: 9
+        }, 
+        {
+          IconPath: '@renderer/assets/icons/hunyuan.svg',
+          Name: 'Hunyuan',
+          Code: 'hunyuan',
+          BaseURL: 'https://api.hunyuan.cloud.tencent.com/v1',
+          APIKey: '',
+          IsEnabled: 1,
+          Seq: 10
+        }, 
+        {
+          IconPath: '@renderer/assets/icons/wenxin.svg',
+          Name: 'Wenxin',
+          Code: 'wenxin',
+          BaseURL: 'https://qianfan.baidubce.com/v2',
+          APIKey: '',
+          IsEnabled: 1,
+          Seq: 11
         }
       ];
 
