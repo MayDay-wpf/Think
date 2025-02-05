@@ -2,6 +2,7 @@ export default {
   system: {
     yes: "Yes",
     no: "No",
+    update: "Update"  // 新增
   },
   systemmenu: {
     chat: "Chat",
@@ -155,5 +156,17 @@ export default {
     october: "Oct",
     november: "Nov",
     december: "Dec"
-  }
+  },
+  update: {
+    title: "Software Update",
+    available: "New Version Available",
+    notAvailable: "You're up to date",
+    downloading: "Downloading update",
+    downloaded: "Update downloaded",
+    error: "Update error",
+    restart: "Restart now",
+    later: "Later",
+    checking: "Checking for updates",
+    progress: "Download progress"
+  },
 }

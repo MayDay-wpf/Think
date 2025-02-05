@@ -2,6 +2,7 @@ export default {
   system: {
     yes: "确认",
     no: "取消",
+    update: "更新"
   },
   systemmenu: {
     chat: "对话",
@@ -155,5 +156,17 @@ export default {
     october: "10月",
     november: "11月",
     december: "12月"
-  }
+  },
+  update: {
+    title: "软件更新",
+    available: "发现新版本",
+    notAvailable: "当前已是最新版本",
+    downloading: "正在下载更新",
+    downloaded: "更新已下载完成",
+    error: "更新出错",
+    restart: "立即重启",
+    later: "稍后重启",
+    checking: "正在检查更新",
+    progress: "下载进度"
+  },
 }

@@ -46,7 +46,6 @@ const createHeatmapOption = (statistics) => {
         visualMap: {
             min: 0,
             max: maxValue || 100,
-            calculable: true,
             orient: 'horizontal',
             left: 'center',
             bottom: '0%',

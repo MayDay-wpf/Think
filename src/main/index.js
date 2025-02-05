@@ -11,6 +11,7 @@ import { initOpenAIHandlers } from './ai/ipc/openai'
 import { initAnthropicHandlers } from './ai/ipc/anthropic'
 import { setupSearchEngineHandlers } from './searchengineSetting'
 import { getModelTokensStatistics, getDailyTokensStatistics } from './statistics'
+import { UpdateHandler } from './updater'
 
 
 
@@ -51,6 +52,8 @@ function createWindow() {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
+  // 初始化更新处理器
+  new UpdateHandler(mainWindow)
 }
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.

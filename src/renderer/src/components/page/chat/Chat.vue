@@ -46,6 +46,10 @@
                     </el-dropdown>
                 </div>
                 <div class="right-controls">
+                    <el-button class="pin-button" :class="{ 'is-pinned': isAlwaysOnTop }" @click="toggleAlwaysOnTop"
+                        size="small">
+                        <i class="ri-pushpin-line"></i>
+                    </el-button>
                     <el-dropdown @command="handleLanguageChange" trigger="click">
                         <div class="dropdown-trigger">&nbsp;
                             <i class="ri-earth-fill"></i>
@@ -164,7 +168,7 @@ const handleLanguageChange = (lang) => {
     localStorage.setItem('language', lang);
 };
 // 多语言- end
-
+const isAlwaysOnTop = ref(false);
 const systemPrompt = ref('');
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
@@ -179,6 +183,16 @@ const isSending = ref(false);
 const currentChatId = inject('currentChatId');
 const emit = defineEmits(['chat-completed']);
 const updateHistoryList = ref(false);
+const toggleAlwaysOnTop = async () => {
+    try {
+        isAlwaysOnTop.value = !isAlwaysOnTop.value;
+        await window.electron.ipcRenderer.invoke('toggle-always-on-top');
+    } catch (error) {
+        console.error('Failed to toggle always on top:', error);
+        ElMessage.error('toggleAlwaysOnTop Error' + error.message);
+    }
+};
+
 const md = new MarkdownIt({
     html: true,
     linkify: true,
@@ -456,10 +470,9 @@ const renderMarkdown = (content) => {
 };
 
 onMounted(async () => {
-    console.log('Component mounted');
     await loadModels();
-    console.log('Models loaded:', models.value);
-
+    // 获取窗口置顶状态
+    isAlwaysOnTop.value = await window.electron.ipcRenderer.invoke('get-always-on-top');
     await Promise.all([
         loadGeneralSettings(),
         loadAdvanceSettings()
@@ -1297,6 +1310,25 @@ const previewImage = (url) => {
 
 .prompt-input-box .el-input {
     width: 100%;
+}
+
+.pin-button {
+    padding: 6px 8px;
+    border: none;
+    background: transparent;
+    -webkit-app-region: no-drag;
+}
+
+.pin-button:hover {
+    background-color: var(--el-fill-color-light);
+}
+
+.pin-button.is-pinned {
+    color: var(--el-color-primary);
+}
+
+.pin-button i {
+    font-size: 16px;
 }
 
 :deep(.mermaid) {

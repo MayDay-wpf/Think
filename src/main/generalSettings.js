@@ -1,5 +1,5 @@
 import sqlite3 from 'sqlite3';
-import { ipcMain } from 'electron';
+import { ipcMain, BrowserWindow } from 'electron';
 import { databasePath } from './databaseServer';
 
 // 获取用户设置
@@ -22,7 +22,7 @@ function updateUserSettings(settings) {
   return new Promise((resolve, reject) => {
     const db = new sqlite3.Database(databasePath);
     const { IsStream, IsAutoScroll, ModelAutoChange, HistoryLength } = settings;
-    
+
     db.run(
       'UPDATE UserSettings SET IsStream = ?, IsAutoScroll = ?, ModelAutoChange = ?, HistoryLength = ? WHERE Id = 1',
       [IsStream, IsAutoScroll, ModelAutoChange, HistoryLength],
@@ -60,6 +60,26 @@ function setupGeneralSettingsHandlers() {
       console.error('Error updating user settings:', error);
       throw error;
     }
+  });
+
+  // 获取窗口置顶状态
+  ipcMain.handle('get-always-on-top', () => {
+    const win = BrowserWindow.getFocusedWindow();
+    if (win) {
+      return win.isAlwaysOnTop();
+    }
+    return false;
+  });
+
+  // 切换窗口置顶状态
+  ipcMain.handle('toggle-always-on-top', () => {
+    const win = BrowserWindow.getFocusedWindow();
+    if (win) {
+      const isAlwaysOnTop = win.isAlwaysOnTop();
+      win.setAlwaysOnTop(!isAlwaysOnTop);
+      return !isAlwaysOnTop;
+    }
+    return false;
   });
 }
 

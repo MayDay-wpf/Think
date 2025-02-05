@@ -16,7 +16,8 @@ const settingItems = ref([
   { key: 'general', label: t('settingMenu.preferences'), icon: 'ri-user-settings-line' },
   { key: 'model', label: t('settingMenu.modelsetting'), icon: 'ri-apps-2-ai-line' },
   { key: 'advanced', label: t('settingMenu.advanced'), icon: 'ri-equalizer-line' },
-  { key: 'searchengine', label: t('settingMenu.searchengine'), icon: 'ri-chat-search-line' }
+  { key: 'searchengine', label: t('settingMenu.searchengine'), icon: 'ri-chat-search-line' },
+  { key: 'update', label: t('system.update'), icon: 'ri-arrow-up-circle-line' },
 ]);
 </script>
 
