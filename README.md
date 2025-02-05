@@ -21,10 +21,12 @@
 - [x] Anthropic
 - [x] Gmini
 - [x] Qwen
-- [] GLM
 - [] Baichuan
 - [] MiniMax
-- [] DouBao
+- [x] DouBao
+- [x] Zhipu
+- [x] Wenxin
+- [x] Hunyuan
 - [x] SiliconFlow
 - [] DALL-E
 - [] MidJourney
