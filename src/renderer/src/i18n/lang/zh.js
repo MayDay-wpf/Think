@@ -36,7 +36,12 @@ export default {
     unimage: "图片文件请使用图片上传按钮",
     only4files: "只允许上传4个文件",
     systemPrompt: '快捷系统提示词',
-    enterSystemPrompt: '输入系统提示词...'
+    enterSystemPrompt: '输入系统提示词...',
+    screenshot: "屏幕实时拾取",
+    capturing: "监视区域",
+    stopCapture:"停止监视",
+    areaSelected:"选区完成",
+    hideWindow:"隐藏窗口"
   },
   settingMenu: {
     preferences: "偏好设置",
@@ -129,12 +134,12 @@ export default {
     to: "至",
     heatmap: "Tokens 消耗热力图",
     usage: "消耗",
-    sum:"总计",
+    sum: "总计",
     input: "输入",
     output: "输出",
-    thepastweek:"最近一周",
-    thepastmonth:"最近一个月",
-    thepastquarter:"最近三个月"
+    thepastweek: "最近一周",
+    thepastmonth: "最近一个月",
+    thepastquarter: "最近三个月"
   },
   calendar: {
     sunday: "周日",

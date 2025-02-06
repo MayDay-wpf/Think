@@ -36,7 +36,12 @@ export default {
     unimage: "Please use the image upload button to submit your image files.",
     only4files: "You can only upload a maximum of four files.",
     systemPrompt: 'Quick System Prompt',
-    enterSystemPrompt: 'Enter system prompt...'
+    enterSystemPrompt: 'Enter system prompt...',
+    screenshot: "Real-time Screen Capture",
+    capturing: "Surveillance Area",
+    stopCapture:"Stop monitoring",
+    areaSelected:"Selection complete",
+    hideWindow:"Hide Window"
   },
   settingMenu: {
     preferences: "Preferences",

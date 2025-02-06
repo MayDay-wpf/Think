@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Screenshot</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      user-select: none;
+    }
+    #screenshot {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      cursor: crosshair;
+    }
+    #selection {
+      position: fixed;
+      border: 1px solid #1d91ee;
+      background: rgba(29, 145, 238, 0.1);
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="screenshot"></canvas>
+  <div id="selection"></div>
+  <script>
+    const { ipcRenderer } = require('electron');
+    const canvas = document.getElementById('screenshot');
+    const ctx = canvas.getContext('2d');
+    const selection = document.getElementById('selection');
+    let isDrawing = false;
+    let startX, startY;
+
+    ipcRenderer.on('start-select', (_, imageData) => {
+      const img = new Image();
+      img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+      };
+      img.src = imageData;
+    });
+
+    canvas.addEventListener('mousedown', (e) => {
+      isDrawing = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      selection.style.display = 'block';
+      selection.style.left = startX + 'px';
+      selection.style.top = startY + 'px';
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (!isDrawing) return;
+      const width = e.clientX - startX;
+      const height = e.clientY - startY;
+      selection.style.width = Math.abs(width) + 'px';
+      selection.style.height = Math.abs(height) + 'px';
+      selection.style.left = (width < 0 ? e.clientX : startX) + 'px';
+      selection.style.top = (height < 0 ? e.clientY : startY) + 'px';
+    });
+
+    canvas.addEventListener('mouseup', (e) => {
+      if (!isDrawing) return;
+      isDrawing = false;
+      const width = e.clientX - startX;
+      const height = e.clientY - startY;
+      
+      ipcRenderer.send('screenshot-complete', {
+        x: Math.min(startX, e.clientX),
+        y: Math.min(startY, e.clientY),
+        width: Math.abs(width),
+        height: Math.abs(height)
+      });
+    });
+  </script>
+</body>
+</html>

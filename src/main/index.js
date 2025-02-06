@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, desktopCapturer, screen } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -12,10 +12,9 @@ import { initAnthropicHandlers } from './ai/ipc/anthropic'
 import { setupSearchEngineHandlers } from './searchengineSetting'
 import { getModelTokensStatistics, getDailyTokensStatistics } from './statistics'
 import { UpdateHandler } from './updater'
+import Screenshots from 'electron-screenshots'
 
-
-
-
+let updateHandler = null;
 function createWindow() {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -53,7 +52,9 @@ function createWindow() {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
   // 初始化更新处理器
-  new UpdateHandler(mainWindow)
+  if (!updateHandler) {
+    updateHandler = new UpdateHandler();
+  }
 }
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -116,6 +117,127 @@ ipcMain.handle('open-external-link', async (event, url) => {
     console.error('Failed to open external link:', error);
     throw error;
   }
+});
+
+let captureArea = null;
+
+ipcMain.handle('select-capture-area', async (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  // 始终隐藏窗口
+  win.hide();
+
+  try {
+    const screenshots = new Screenshots();
+    const result = await new Promise((resolve) => {
+      screenshots.on('ok', (e, buffer, bounds) => {
+        resolve(bounds);
+      });
+      screenshots.on('cancel', () => {
+        resolve(null);
+      });
+      screenshots.startCapture();
+    });
+
+    // 截图完成后显示窗口
+    win.show();
+
+    if (!result) return null;
+
+    captureArea = {
+      x: Math.round(result.bounds.x),
+      y: Math.round(result.bounds.y),
+      width: Math.round(result.bounds.width),
+      height: Math.round(result.bounds.height)
+    };
+
+    return captureArea;
+  } catch (error) {
+    console.error('Area selection error:', error);
+    win.show();
+    throw error;
+  }
+});
+
+ipcMain.handle('capture-selected-area', async (event, option) => {
+  if (!captureArea) return null;
+
+  try {
+    // 获取发送事件的窗口
+    const win = BrowserWindow.fromWebContents(event.sender);
+    // 临时隐藏窗口进行截图
+    if (option.hideWindow)
+      win.hide();
+    await new Promise(resolve => setTimeout(resolve, 100)); // 等待窗口完全隐藏
+    const displays = screen.getAllDisplays();
+    const targetDisplay = displays.find(display => {
+      const bounds = display.bounds;
+      return (
+        captureArea.x >= bounds.x &&
+        captureArea.y >= bounds.y &&
+        captureArea.x + captureArea.width <= bounds.x + bounds.width &&
+        captureArea.y + captureArea.height <= bounds.y + bounds.height
+      );
+    });
+
+    if (!targetDisplay) return null;
+
+    const sources = await desktopCapturer.getSources({
+      types: ['screen'],
+      thumbnailSize: {
+        width: targetDisplay.bounds.width,
+        height: targetDisplay.bounds.height
+      }
+    });
+
+    const targetSource = sources.find(source =>
+      source.display_id === targetDisplay.id.toString()
+    );
+
+    if (!targetSource) return null;
+
+    const tempWin = new BrowserWindow({
+      show: false,
+      width: captureArea.width,    // 设置为选区宽度
+      height: captureArea.height,  // 设置为选区高度
+      webPreferences: {
+        offscreen: true,
+        backgroundThrottling: false
+      }
+    });
+
+    // 使用 HTML 设置图片大小和样式，避免滚动条
+    const html = `
+      <html>
+        <body style="margin: 0; overflow: hidden;">
+          <img src="${targetSource.thumbnail.toDataURL()}" 
+               style="position: absolute; 
+                      left: ${-1 * (captureArea.x - targetDisplay.bounds.x)}px;
+                      top: ${-1 * (captureArea.y - targetDisplay.bounds.y)}px;
+                      width: ${targetDisplay.bounds.width}px;
+                      height: ${targetDisplay.bounds.height}px;">
+        </body>
+      </html>
+    `;
+
+    await tempWin.loadURL(`data:text/html,${encodeURIComponent(html)}`);
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    const image = await tempWin.webContents.capturePage();
+    tempWin.destroy();
+
+    win.show();
+    return image.toDataURL();
+  } catch (error) {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    win.show();
+    console.error('Capture error:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('clear-capture-area', () => {
+  captureArea = null;
+  return true;
 });
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.

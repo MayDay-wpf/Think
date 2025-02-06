@@ -23,6 +23,26 @@
           <i :class="isOnline ? 'ri-planet-fill' : 'ri-planet-line'"></i>
         </div>
       </el-tooltip>
+      <el-tooltip :content="isCapturing ? t('chatPage.stopCapture') : t('chatPage.screenshot')" placement="top"
+        :show-after="300">
+        <div class="toolbar-item" :class="{ 'capturing': isCapturing }">
+          <i :class="isCapturing ? 'ri-stop-circle-line' : 'ri-screenshot-2-line'" @click="toggleScreenshot"></i>
+        </div>
+      </el-tooltip>
+    </div>
+    <!-- 截图区域信息 -->
+    <div v-if="isCapturing" class="screenshot-preview">
+      <div class="screenshot-info">
+        <div class="capture-controls">
+          <span>{{ t('chatPage.capturing') }}</span>
+          <span v-if="captureArea">{{ Math.round(captureArea.width) }} x {{ Math.round(captureArea.height) }}</span>
+          <span>{{ t('chatPage.hideWindow') }}:</span>
+          <el-switch v-model="hideWindow" inline-prompt size="small" style="margin: 0 10px" />
+        </div>
+        <el-button link type="danger" @click="clearScreenshot">
+          <i class="ri-close-line"></i>
+        </el-button>
+      </div>
     </div>
     <!-- 图片预览区域 -->
     <div class="image-preview" v-if="imageList.length > 0">
@@ -76,14 +96,30 @@ onMounted(() => {
   });
 });
 
-const sendMessage = () => {
-  if (inputMessage.value.trim() !== '') {
+const sendMessage = async () => {
+  if (inputMessage.value.trim() !== '' || (isCapturing.value && captureArea.value)) {
+    if (isCapturing.value && captureArea.value) {
+      try {
+        const screenshot = await window.electron.ipcRenderer.invoke('capture-selected-area', {
+          hideWindow: hideWindow.value
+        });
+        if (screenshot) {
+          // 将截图添加到 imageList 的开头
+          imageList.value.unshift(screenshot);
+        }
+      } catch (error) {
+        console.error('Capture error:', error);
+        ElMessage.error(t('chatPage.captureError'));
+      }
+    }
+
     emit('send', {
       text: inputMessage.value,
       images: imageList.value,
       files: fileList.value,
       online: isOnline.value
     });
+
     if (!props.isSending) {
       inputMessage.value = '';
       imageList.value = [];
@@ -271,6 +307,49 @@ const emitHeightChange = () => {
     emit('heightChange', inputArea.value.offsetHeight);
   }
 };
+
+const hideWindow = ref(false);
+const isCapturing = ref(false);
+const captureArea = ref(null);
+
+const toggleScreenshot = async () => {
+  if (isCapturing.value) {
+    // 如果正在捕获，则停止
+    await clearScreenshot();
+  } else {
+    try {
+      const result = await window.electron.ipcRenderer.invoke('select-capture-area');
+      if (result) {
+        captureArea.value = {
+          x: Math.round(result.x),
+          y: Math.round(result.y),
+          width: Math.round(result.width),
+          height: Math.round(result.height)
+        };
+        isCapturing.value = true;
+        ElMessage.success(t('chatPage.areaSelected'));
+        // 更新输入框高度
+        nextTick(() => {
+          emitHeightChange();
+        });
+      }
+    } catch (error) {
+      console.error('Screenshot error:', error);
+      ElMessage.error(error.message);
+    }
+  }
+};
+
+const clearScreenshot = async () => {
+  isCapturing.value = false;
+  captureArea.value = null;
+  await window.electron.ipcRenderer.invoke('clear-capture-area');
+  // 更新输入框高度
+  nextTick(() => {
+    emitHeightChange();
+  });
+};
+
 </script>
 
 <style scoped>
@@ -449,5 +528,41 @@ const emitHeightChange = () => {
 
 .file-remove:hover {
   color: #666;
+}
+
+.screenshot-preview {
+  margin: 8px 0;
+  padding: 8px;
+  background-color: var(--el-border-color-light);
+  border-radius: 4px;
+}
+
+.screenshot-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--el-text-color-primary);
+  font-size: 12px;
+}
+
+.toolbar-item.capturing {
+  color: #67c23a;
+  background-color: rgba(103, 194, 58, 0.1);
+}
+
+.screenshot-preview {
+  margin: 8px 0;
+  padding: 8px;
+  background-color: var(--el-border-color-light);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.capture-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 </style>

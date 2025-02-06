@@ -6,6 +6,7 @@ import AiModel from '../components/page/settings/AiModel.vue'
 import Advanced from '../components/page/settings/Advanced.vue'
 import SearchEngine from '../components/page/settings/SearchEngine.vue'
 import UpdatePage from '../components/page/settings/UpdateNotification.vue'
+
 const routes = [
   { path: '/', redirect: '/chat' },
   {
