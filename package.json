@@ -1,7 +1,7 @@
 {
   "name": "Think",
   "productName": "Think",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "An Electron application with Vue",
   "main": "./out/main/index.js",
   "author": "aibotpro.cn",
