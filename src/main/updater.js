@@ -4,11 +4,13 @@ import { ipcMain } from 'electron'
 export class UpdateHandler {
     constructor(mainWindow) {
         this.mainWindow = mainWindow
-
+        if (process.env.NODE_ENV === 'development') {
+            autoUpdater.forceDevUpdateConfig = true
+        }
         // 配置更新服务器地址
         autoUpdater.setFeedURL({
             provider: 'github',
-            owner: 'your-github-username',
+            owner: 'MayDay-wpf',
             repo: 'Think'
         })
 

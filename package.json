@@ -17,7 +17,10 @@
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "npm run build && electron-builder --mac",
     "build:mac-x64": "npm run build && electron-builder --mac --x64",
-    "build:linux": "npm run build && electron-builder --linux"
+    "build:mac-all": "npm run build && electron-builder --mac --arm64 --x64",
+    "build:linux": "npm run build && electron-builder --linux",
+    "publish": "electron-builder -p always",
+    "publish:local": "electron-builder -p never -c.publish.provider=generic -c.publish.url=https://github.com/MayDay-wpf/Think/releases/download/v1.0.1/"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.36.3",
@@ -73,12 +76,12 @@
   "build": {
     "appId": "com.aibotpro.think",
     "productName": "Think",
-    "publish": {
-      "provider": "github",
-      "owner": "MayDay-wpf",
-      "repo": "Think",
-      "private": false
-    },
+    "publish": [
+      {
+        "provider": "generic",
+        "url": "https://github.com/MayDay-wpf/Think/releases/download/v1.0.1/"
+      }
+    ],
     "mac": {
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
@@ -91,8 +94,27 @@
             "x64",
             "arm64"
           ]
+        },
+        {
+          "target": "zip",
+          "arch": ["x64", "arm64"]
         }
-      ]
+      ],
+      "files": [
+        "out/**/*",
+        "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+        "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
+        "!**/node_modules/*.d.ts",
+        "!**/node_modules/.bin",
+        "!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}",
+        "!.editorconfig",
+        "!**/._*",
+        "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}",
+        "!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}",
+        "!**/{appveyor.yml,.travis.yml,circle.yml}",
+        "!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}"
+      ],
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
     },
     "win": {
       "target": [
@@ -112,6 +134,9 @@
           ]
         }
       ]
+    },
+    "directories": {
+      "output": "build/release"
     }
   }
 }

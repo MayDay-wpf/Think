@@ -53,7 +53,7 @@ function createWindow() {
   }
   // 初始化更新处理器
   if (!updateHandler) {
-    updateHandler = new UpdateHandler();
+    updateHandler = new UpdateHandler(mainWindow);
   }
 }
 // This method will be called when Electron has finished
