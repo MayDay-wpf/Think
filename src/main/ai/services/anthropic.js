@@ -26,10 +26,9 @@ class AnthropicService {
 
                     if (accumulatedResponse) {
                         const userContent = messages[messages.length - 1].content;
-                        const imageList = messages.filter(msg => msg.images && msg.images.length > 0)
-                            .map(msg => msg.images).flat();
-                        const fileList = messages.filter(msg => msg.files && msg.files.length > 0)
-                            .map(msg => msg.files).flat();
+                        const lastMessage = messages[messages.length - 1];
+                        const imageList = lastMessage.images || [];
+                        const fileList = lastMessage.files || [];
 
                         await saveChatHistory(
                             chatId,
@@ -148,8 +147,9 @@ class AnthropicService {
             }
 
             const userContent = messages[messages.length - 1].content;
-            const imageList = messages.filter(msg => msg.images && msg.images.length > 0).map(msg => msg.images).flat();
-            const fileList = messages.filter(msg => msg.files && msg.files.length > 0).map(msg => msg.files).flat();
+            const lastMessage = messages[messages.length - 1];
+            const imageList = lastMessage.images || [];
+            const fileList = lastMessage.files || [];
 
             await saveChatHistory(
                 chatId,
@@ -280,8 +280,9 @@ class AnthropicService {
             }
 
             const userContent = messages[messages.length - 1].content;
-            const imageList = messages.filter(msg => msg.images && msg.images.length > 0).map(msg => msg.images).flat();
-            const fileList = messages.filter(msg => msg.files && msg.files.length > 0).map(msg => msg.files).flat();
+            const lastMessage = messages[messages.length - 1];
+            const imageList = lastMessage.images || [];
+            const fileList = lastMessage.files || [];
 
             await saveChatHistory(
                 chatId,

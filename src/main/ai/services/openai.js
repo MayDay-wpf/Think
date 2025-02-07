@@ -26,10 +26,9 @@ class OpenAIService {
 
                     if (accumulatedResponse && !this.currentSession.historySaved) {
                         const userContent = messages[messages.length - 1].content;
-                        const imageList = messages.filter(msg => msg.images && msg.images.length > 0)
-                            .map(msg => msg.images).flat();
-                        const fileList = messages.filter(msg => msg.files && msg.files.length > 0)
-                            .map(msg => msg.files).flat();
+                        const lastMessage = messages[messages.length - 1];
+                        const imageList = lastMessage.images || [];
+                        const fileList = lastMessage.files || [];
 
                         await saveChatHistory(
                             chatId,
@@ -139,8 +138,9 @@ class OpenAIService {
             });
 
             const userContent = messages[messages.length - 1].content;
-            const imageList = messages.filter(msg => msg.images && msg.images.length > 0).map(msg => msg.images).flat();
-            const fileList = messages.filter(msg => msg.files && msg.files.length > 0).map(msg => msg.files).flat();
+            const lastMessage = messages[messages.length - 1];
+            const imageList = lastMessage.images || [];
+            const fileList = lastMessage.files || [];
 
             // 处理工具调用
             let assistantContent = '';
@@ -311,8 +311,9 @@ class OpenAIService {
             }
 
             const userContent = messages[messages.length - 1].content;
-            const imageList = messages.filter(msg => msg.images && msg.images.length > 0).map(msg => msg.images).flat();
-            const fileList = messages.filter(msg => msg.files && msg.files.length > 0).map(msg => msg.files).flat();
+            const lastMessage = messages[messages.length - 1];
+            const imageList = lastMessage.images || [];
+            const fileList = lastMessage.files || [];
 
             await saveChatHistory(
                 chatId,

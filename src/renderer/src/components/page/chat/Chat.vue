@@ -793,6 +793,7 @@ const loadChatHistory = async (chat) => {
 
         // 获取聊天历史
         const chatDetail = await window.electron.ipcRenderer.invoke('get-chat-detail', chat.chatId);
+        console.log('Chat history:', chatDetail);
         if (isSending.value) {
             ElMessage.warning(t('chatPage.wait'));
             return;

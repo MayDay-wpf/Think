@@ -165,8 +165,9 @@ ipcMain.handle('capture-selected-area', async (event, option) => {
     // 获取发送事件的窗口
     const win = BrowserWindow.fromWebContents(event.sender);
     // 临时隐藏窗口进行截图
-    if (option.hideWindow)
+    if (option.hideWindow) {
       win.hide();
+    }
     await new Promise(resolve => setTimeout(resolve, 100)); // 等待窗口完全隐藏
     const displays = screen.getAllDisplays();
     const targetDisplay = displays.find(display => {
@@ -224,12 +225,15 @@ ipcMain.handle('capture-selected-area', async (event, option) => {
 
     const image = await tempWin.webContents.capturePage();
     tempWin.destroy();
-
-    win.show();
+    if (option.hideWindow) {
+      win.show();
+    }
     return image.toDataURL();
   } catch (error) {
     const win = BrowserWindow.fromWebContents(event.sender);
-    win.show();
+    if (option.hideWindow) {
+      win.show();
+    }
     console.error('Capture error:', error);
     throw error;
   }
