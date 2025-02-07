@@ -811,15 +811,16 @@ const loadChatHistory = async (chat) => {
                     files: msg.fileList || [],
                     loading: false
                 });
-                console.log('user message:', msg.fileList);
             }
             // 如果有AI回复，添加AI消息
             if (msg.assistantContent) {
+                // 处理 AI 消息，确保思考过程和主要内容分开显示
+                const content = msg.assistantContent;
                 messages.push({
                     id: `${msg.id}-ai`,
                     sender: 'ai',
                     groupId: msg.groupId,
-                    content: msg.assistantContent,
+                    content: content,  // 不需要预处理，让 renderMarkdown 处理
                     loading: false,
                     modelName: msg.modelName
                 });
@@ -827,15 +828,25 @@ const loadChatHistory = async (chat) => {
             return messages;
         });
 
-        // 滚动到底部
+        // 滚动到底部并确保 thinking-block 正确渲染
         nextTick(() => {
             scrollToBottom();
+            // 初始化所有 thinking-block 的展开/折叠状态
+            const thinkingBlocks = document.querySelectorAll('.thinking-block');
+            thinkingBlocks.forEach(block => {
+                const toggleBtn = block.querySelector('.thinking-header');
+                const content = block.querySelector('.thinking-content');
+                if (toggleBtn && content) {
+                    // 默认展开状态
+                    toggleBtn.querySelector('i').style.transform = 'rotate(180deg)';
+                    content.style.display = 'block';
+                }
+            });
         });
     } catch (error) {
         ElMessage.error('Error：' + error.message);
     }
 };
-
 // 暴露方法
 defineExpose({
     clearChat,

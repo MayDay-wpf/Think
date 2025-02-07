@@ -260,14 +260,16 @@ class OpenAIService {
                         accumulatedResponse += reasoning_content;
                         onData(reasoning_content, false);
                     }
-                }
-                else if (!reasoning_content && content) {
-                    if(startthink){
+                } else {
+                    if (startthink) {
                         startthink = false;
                         onData('</think>', false);
+                        accumulatedResponse += '</think>';
                     }
-                    accumulatedResponse += content;
-                    onData(content, false);
+                    if (content) {
+                        accumulatedResponse += content;
+                        onData(content, false);
+                    }
                 }
                 this.currentSession.accumulatedResponse = accumulatedResponse;
 
