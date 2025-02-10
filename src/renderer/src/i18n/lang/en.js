@@ -41,7 +41,9 @@ export default {
     capturing: "Surveillance Area",
     stopCapture:"Stop monitoring",
     areaSelected:"Selection complete",
-    hideWindow:"Hide Window"
+    hideWindow:"Hide Window",
+    think:"The Thought Process of AI",
+    thinking:"AI is thinking...",
   },
   settingMenu: {
     preferences: "Preferences",
@@ -172,11 +174,14 @@ export default {
     restart: "Restart now",
     later: "Later",
     checking: "Checking for updates...",
+    checkingProgress: "Checking",
     progress: "Download progress",
     newVersion: "New version",
     releaseNotes: "Release Notes",
     manual: "Manual Update",
     confirmRestart: "Restart now?",
+    lastCheck: "Last checked",
+    unknownError: "Unknown error",
     yes: "Yes",
     no: "No"
   },

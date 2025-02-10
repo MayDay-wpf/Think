@@ -5,25 +5,34 @@
         <h2>{{ t('update.title') }}</h2>
         <span class="current-version">v{{ currentVersion }}</span>
       </div>
-      
+
       <div class="update-content">
         <!-- 检查更新状态 -->
         <div v-if="status === 'checking'" class="status-box checking">
-          <el-icon class="rotating"><Loading /></el-icon>
+          <el-icon class="rotating">
+            <Loading />
+          </el-icon>
           <span>{{ t('update.checking') }}</span>
+          <div class="check-progress">
+            <el-progress :percentage="checkProgress" :format="() => t('update.checkingProgress')" :stroke-width="4"
+              :show-text="false" class="progress-bar" />
+          </div>
         </div>
 
         <!-- 最新版本状态 -->
         <div v-if="status === 'not-available'" class="status-box up-to-date">
-          <el-icon><Select /></el-icon>
+          <el-icon>
+            <CircleCheck />
+          </el-icon>
           <span>{{ t('update.notAvailable') }}</span>
           <el-button @click="checkForUpdates">{{ t('systemmenu.refresh') }}</el-button>
           <span class="last-check-time">{{ t('update.lastCheck') }}: {{ lastCheckTime }}</span>
         </div>
-
         <!-- 发现新版本状态 -->
         <div v-if="status === 'available'" class="status-box available">
-          <el-icon><Bell /></el-icon>
+          <el-icon>
+            <Bell />
+          </el-icon>
           <div class="version-info">
             <span>{{ t('update.newVersion') }}: v{{ updateInfo?.version }}</span>
             <div class="release-notes" v-if="updateInfo?.releaseNotes">
@@ -44,7 +53,7 @@
           <div class="progress-info">
             <span>{{ t('update.downloading') }}</span>
             <span class="progress-text">
-              {{ downloadProgress }}% 
+              {{ downloadProgress }}%
               ({{ formatSpeed(downloadSpeed) }})
             </span>
           </div>
@@ -56,7 +65,9 @@
 
         <!-- 下载完成状态 -->
         <div v-if="status === 'downloaded'" class="status-box downloaded">
-          <el-icon><Success /></el-icon>
+          <el-icon>
+            <Success />
+          </el-icon>
           <span>{{ t('update.downloaded') }}</span>
           <div class="action-buttons">
             <el-button type="primary" @click="installUpdate">
@@ -70,7 +81,9 @@
 
         <!-- 错误状态 -->
         <div v-if="status === 'error'" class="status-box error">
-          <el-icon><Warning /></el-icon>
+          <el-icon>
+            <Warning />
+          </el-icon>
           <div class="error-info">
             <span>{{ t('update.error') }}</span>
             <p class="error-message">{{ errorMessage }}</p>
@@ -103,19 +116,18 @@ const errorMessage = ref('')
 const currentVersion = ref('')
 const updateInfo = ref(null)
 const lastCheckTime = ref('')
+const checkProgress = ref(0)
+let progressInterval = null
 
 // 更新状态处理函数
 const handleUpdateStatus = (_event, payload) => {
-  console.log('收到原始更新状态:', payload)
-  
   if (!payload || typeof payload !== 'object') {
-    console.error('无效的更新数据:', payload)
     return
   }
-  
+
   // 更新组件状态
   status.value = payload.status
-  
+
   switch (payload.status) {
     case 'progress':
       downloadProgress.value = Math.round(payload.data?.percent || 0)
@@ -125,8 +137,10 @@ const handleUpdateStatus = (_event, payload) => {
       }
       break
     case 'available':
-      console.log('处理可用更新数据:', payload.data)
       updateInfo.value = payload.data
+      break
+    case 'not-available':
+      updateInfo.value = null
       break
     case 'error':
       errorMessage.value = payload.data?.message || t('update.unknownError')
@@ -139,22 +153,18 @@ const handleUpdateStatus = (_event, payload) => {
 
 onMounted(async () => {
   try {
-    console.log('组件挂载，开始初始化...')
     // 获取当前版本
     currentVersion.value = await window.electron.ipcRenderer.invoke('get-app-version')
-    console.log('当前版本:', currentVersion.value)
-    
+
     // 获取上次检查时间
     lastCheckTime.value = localStorage.getItem('lastUpdateCheck') || ''
-    
+
     // 注册更新状态监听
     window.electron.ipcRenderer.on('update-status', handleUpdateStatus)
-    console.log('已注册更新状态监听器')
-    
+
     // 开始检查更新
     await checkForUpdates()
   } catch (error) {
-    console.error('初始化更新检查失败:', error)
     status.value = 'error'
     errorMessage.value = error.message || t('update.unknownError')
   }
@@ -162,28 +172,47 @@ onMounted(async () => {
 
 onUnmounted(() => {
   // 清理事件监听
+  stopFakeProgress()
   window.electron.ipcRenderer.removeListener('update-status', handleUpdateStatus)
 })
+
+const startFakeProgress = () => {
+  checkProgress.value = 0
+  progressInterval = setInterval(() => {
+    if (checkProgress.value < 90) {
+      checkProgress.value += Math.random() * 10
+    }
+  }, 300)
+}
+
+const stopFakeProgress = () => {
+  if (progressInterval) {
+    clearInterval(progressInterval)
+    progressInterval = null
+  }
+  checkProgress.value = 100
+}
 
 const checkForUpdates = async () => {
   try {
     status.value = 'checking'
     errorMessage.value = ''
-    
-    // 开发环境下添加额外的错误处理
-    if (import.meta.env.DEV) {
-      console.log('开发环境下检查更新...')
-    }
+    updateInfo.value = null
+    startFakeProgress()
     
     await window.electron.ipcRenderer.invoke('check-for-updates')
+    stopFakeProgress()
+    
     lastCheckTime.value = dayjs().format('YYYY-MM-DD HH:mm:ss')
     localStorage.setItem('lastUpdateCheck', lastCheckTime.value)
   } catch (error) {
+    stopFakeProgress()
     console.error('检查更新失败:', error)
     status.value = 'error'
     errorMessage.value = error.message || t('update.unknownError')
   }
 }
+
 
 const startDownload = async () => {
   try {
@@ -193,16 +222,12 @@ const startDownload = async () => {
     estimatedTime.value = ''
     errorMessage.value = ''
     status.value = 'progress'
-    
-    console.log('开始请求下载更新...')
     const result = await window.electron.ipcRenderer.invoke('start-download')
-    console.log('下载请求结果:', result)
-    
+
     if (!result) {
       throw new Error(t('update.downloadFailed'))
     }
   } catch (error) {
-    console.error('下载失败:', error)
     status.value = 'error'
     errorMessage.value = error.message || t('update.unknownError')
   }
@@ -221,14 +246,12 @@ const installUpdate = async () => {
     })
 
     if (response === 0) {
-      console.log('用户确认重启，执行更新安装...')
       // 先关闭所有窗口
       await window.electron.ipcRenderer.invoke('close-all-windows')
       // 然后执行更新安装
       await window.electron.ipcRenderer.invoke('quit-and-install')
     }
   } catch (error) {
-    console.error('安装更新失败:', error)
     status.value = 'error'
     errorMessage.value = error.message || t('update.unknownError')
   }
@@ -250,12 +273,12 @@ const formatSpeed = (bytesPerSecond) => {
   const units = ['B/s', 'KB/s', 'MB/s']
   let speed = bytesPerSecond
   let unitIndex = 0
-  
+
   while (speed > 1024 && unitIndex < units.length - 1) {
     speed /= 1024
     unitIndex++
   }
-  
+
   return `${speed.toFixed(1)} ${units[unitIndex]}`
 }
 
@@ -270,14 +293,13 @@ const progressFormat = (percentage) => {
 }
 
 const openGithubReleases = () => {
-  window.electron.ipcRenderer.invoke('open-external-link', 
+  window.electron.ipcRenderer.invoke('open-external-link',
     'https://github.com/MayDay-wpf/Think/releases')
 }
 </script>
 
 <style scoped>
 .update-page {
-  height: calc(100vh - 30px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -371,7 +393,29 @@ const openGithubReleases = () => {
 }
 
 @keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.release-notes-content {
+  padding: 16px 20px;
+}
+
+.check-progress {
+  width: 200px;
+  margin-top: 8px;
+}
+
+.progress-bar :deep(.el-progress-bar__inner) {
+  transition: all 0.3s ease;
+}
+
+.progress-bar :deep(.el-progress-bar__outer) {
+  background-color: var(--el-fill-color-dark);
 }
 </style>

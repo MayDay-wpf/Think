@@ -41,7 +41,9 @@ export default {
     capturing: "监视区域",
     stopCapture:"停止监视",
     areaSelected:"选区完成",
-    hideWindow:"隐藏窗口"
+    hideWindow:"隐藏窗口",
+    think:"AI 的思考过程",
+    thinking:"AI 正在思考...",
   },
   settingMenu: {
     preferences: "偏好设置",
@@ -172,11 +174,14 @@ export default {
     restart: "立即重启",
     later: "稍后重启",
     checking: "正在检查更新...",
+    checkingProgress: "检查中", 
     progress: "下载进度",
     newVersion: "新版本",
     releaseNotes: "发布说明",
     manual: "手动下载",
     confirmRestart: "更新已下载完成，是否立即重启？",
+    lastCheck: "上次检查更新时间",
+    unknownError: "未知错误",
     yes: "是",
     no: "否"
   },

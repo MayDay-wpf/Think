@@ -376,7 +376,7 @@ const renderMarkdown = (content) => {
             return `<div class="thinking-block">
                 <div class="thinking-header">
                     <i class="ri-brain-line"></i>
-                    ${hasEndTag ? 'AI 的思考过程' : 'AI 正在思考...'}
+                    ${hasEndTag ? t('chatPage.think') : t('chatPage.thinking')}
                     <el-button class="toggle-btn" size="small">
                         <i class="ri-arrow-down-s-line"></i>
                     </el-button>
