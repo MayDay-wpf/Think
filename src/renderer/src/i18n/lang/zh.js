@@ -171,7 +171,13 @@ export default {
     error: "更新出错",
     restart: "立即重启",
     later: "稍后重启",
-    checking: "正在检查更新",
-    progress: "下载进度"
+    checking: "正在检查更新...",
+    progress: "下载进度",
+    newVersion: "新版本",
+    releaseNotes: "发布说明",
+    manual: "手动下载",
+    confirmRestart: "更新已下载完成，是否立即重启？",
+    yes: "是",
+    no: "否"
   },
 }

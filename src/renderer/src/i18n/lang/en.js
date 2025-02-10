@@ -171,7 +171,13 @@ export default {
     error: "Update error",
     restart: "Restart now",
     later: "Later",
-    checking: "Checking for updates",
-    progress: "Download progress"
+    checking: "Checking for updates...",
+    progress: "Download progress",
+    newVersion: "New version",
+    releaseNotes: "Release Notes",
+    manual: "Manual Update",
+    confirmRestart: "Restart now?",
+    yes: "Yes",
+    no: "No"
   },
 }
