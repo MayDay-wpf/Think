@@ -68,6 +68,3 @@ $ npm run build:mac
 # For Linux
 $ npm run build:linux
 ```
-
-# QQ Group
-![](https://img2anywhere-hk.maymay5.com/imgs/2025/02/d282d8fef4fc8df3.png)
